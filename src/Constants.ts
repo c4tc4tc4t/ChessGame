@@ -10,6 +10,7 @@ import rainhaBlack from "./assets/images/queen_b.png";
 import rainhaWhite from "./assets/images/queen_w.png";
 import reiBlack from "./assets/images/king_b.png";
 import reiWhite from "./assets/images/king_w.png";
+import { Piece, Position } from "./models";
 
 
 export const VERTICAL_AXIS = ["1", "2", "3", "4", "5", "6", "7", "8"];
@@ -21,23 +22,12 @@ export function samePosition(p1: Position, p2: Position) {
   return p1.x === p2.x && p1.y === p2.y
 }
 
-export interface Piece {
-  image: string;
-  position: Position
-  type: PieceType;
-  team: TeamType;
-  enPassant?: boolean;
-}
 
 export enum TeamType {
   OPPONENT,
   OUR,
 }
 
-export interface Position {
-  x: number,
-  y: number
-}
 
 export enum PieceType {
   PAWN,
@@ -49,325 +39,48 @@ export enum PieceType {
 }
 
 export const initialBoardState: Piece[] = [
-  {
-    image: torreBlack,
-    position: {
+  new Piece(torreBlack, new Position(0, 7), PieceType.ROOK, TeamType.OPPONENT),
+  new Piece(torreBlack, new Position(7, 7), PieceType.ROOK, TeamType.OPPONENT),
 
-      x: 0,
-      y: 7,
-    },
-    type: PieceType.ROOK,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: torreBlack,
-    position: {
+  new Piece(torreWhite, new Position(0, 0), PieceType.ROOK, TeamType.OUR),
+  new Piece(torreWhite, new Position(7, 0), PieceType.ROOK, TeamType.OUR),
 
-      x: 7,
-      y: 7,
-    },
-    type: PieceType.ROOK,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: torreWhite,
-    position: {
+  new Piece(cavaloBlack, new Position(1, 7), PieceType.KNIGHT, TeamType.OPPONENT),
+  new Piece(cavaloBlack, new Position(6, 7), PieceType.KNIGHT, TeamType.OPPONENT),
 
-      x: 0,
-      y: 0,
-    },
-    type: PieceType.ROOK,
-    team: TeamType.OUR,
-  },
-  {
-    image: torreWhite,
-    position: {
+  new Piece(cavaloWhite, new Position(1, 0), PieceType.KNIGHT, TeamType.OUR),
+  new Piece(cavaloWhite, new Position(6, 0), PieceType.KNIGHT, TeamType.OUR),
 
-      x: 7,
-      y: 0,
-    },
-    type: PieceType.ROOK,
-    team: TeamType.OUR,
-  },
-  {
-    image: cavaloBlack,
-    position: {
+  new Piece(bispoBlack, new Position(2, 7), PieceType.BISHOP, TeamType.OPPONENT),
+  new Piece(bispoBlack, new Position(5, 7), PieceType.BISHOP, TeamType.OPPONENT),
 
-      x: 1,
-      y: 7,
-    },
-    type: PieceType.KNIGHT,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: cavaloBlack,
-    position: {
+  new Piece(bispoWhite, new Position(2, 0), PieceType.BISHOP, TeamType.OUR),
+  new Piece(bispoWhite, new Position(5, 0), PieceType.BISHOP, TeamType.OUR),
 
-      x: 6,
-      y: 7,
-    },
-    type: PieceType.KNIGHT,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: cavaloWhite,
-    position: {
+  new Piece(rainhaBlack, new Position(3, 7), PieceType.QUEEN, TeamType.OPPONENT),
 
-      x: 1,
-      y: 0,
-    },
-    type: PieceType.KNIGHT,
-    team: TeamType.OUR,
-  },
-  {
-    image: cavaloWhite,
-    position: {
+  new Piece(rainhaWhite, new Position(3, 0), PieceType.QUEEN, TeamType.OUR),
 
-      x: 6,
-      y: 0,
-    },
-    type: PieceType.KNIGHT,
-    team: TeamType.OUR,
-  },
-  {
-    image: bispoBlack,
-    position: {
+  new Piece(reiBlack, new Position(4, 7), PieceType.KING, TeamType.OPPONENT),
 
-      x: 2,
-      y: 7,
-    },
-    type: PieceType.BISHOP,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: bispoBlack,
-    position: {
+  new Piece(reiWhite, new Position(4, 0), PieceType.KING, TeamType.OUR),
 
-      x: 5,
-      y: 7,
-    },
-    type: PieceType.BISHOP,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: bispoWhite,
-    position: {
+  new Piece(peaoBlack, new Position(0, 6), PieceType.PAWN, TeamType.OPPONENT),
+  new Piece(peaoBlack, new Position(1, 6), PieceType.PAWN, TeamType.OPPONENT),
+  new Piece(peaoBlack, new Position(2, 6), PieceType.PAWN, TeamType.OPPONENT),
+  new Piece(peaoBlack, new Position(3, 6), PieceType.PAWN, TeamType.OPPONENT),
+  new Piece(peaoBlack, new Position(4, 6), PieceType.PAWN, TeamType.OPPONENT),
+  new Piece(peaoBlack, new Position(5, 6), PieceType.PAWN, TeamType.OPPONENT),
+  new Piece(peaoBlack, new Position(6, 6), PieceType.PAWN, TeamType.OPPONENT),
+  new Piece(peaoBlack, new Position(7, 6), PieceType.PAWN, TeamType.OPPONENT),
 
-      x: 2,
-      y: 0,
-    },
-    type: PieceType.BISHOP,
-    team: TeamType.OUR,
-  },
-  {
-    image: bispoWhite,
-    position: {
-
-      x: 5,
-      y: 0,
-    },
-    type: PieceType.BISHOP,
-    team: TeamType.OUR,
-  },
-  {
-    image: rainhaBlack,
-    position: {
-
-      x: 3,
-      y: 7,
-    },
-    type: PieceType.QUEEN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: rainhaWhite,
-    position: {
-
-      x: 3,
-      y: 0,
-    },
-    type: PieceType.QUEEN,
-    team: TeamType.OUR,
-  },
-  {
-    image: reiBlack,
-    position: {
-
-      x: 4,
-      y: 7,
-    },
-    type: PieceType.KING,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: reiWhite,
-    position: {
-
-      x: 4,
-      y: 0,
-    },
-    type: PieceType.KING,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 0,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 1,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 2,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 3,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 4,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 5,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 6,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoBlack,
-    position: {
-
-      x: 7,
-      y: 6,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OPPONENT,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 0,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 1,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 2,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 3,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 4,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 5,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 6,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
-  {
-    image: peaoWhite,
-    position: {
-
-      x: 7,
-      y: 1,
-    },
-    type: PieceType.PAWN,
-    team: TeamType.OUR,
-  },
+  new Piece(peaoWhite, new Position(0, 1), PieceType.PAWN, TeamType.OUR),
+  new Piece(peaoWhite, new Position(1, 1), PieceType.PAWN, TeamType.OUR),
+  new Piece(peaoWhite, new Position(2, 1), PieceType.PAWN, TeamType.OUR),
+  new Piece(peaoWhite, new Position(3, 1), PieceType.PAWN, TeamType.OUR),
+  new Piece(peaoWhite, new Position(4, 1), PieceType.PAWN, TeamType.OUR),
+  new Piece(peaoWhite, new Position(5, 1), PieceType.PAWN, TeamType.OUR),
+  new Piece(peaoWhite, new Position(6, 1), PieceType.PAWN, TeamType.OUR),
+  new Piece(peaoWhite, new Position(7, 1), PieceType.PAWN, TeamType.OUR),
 
 ];

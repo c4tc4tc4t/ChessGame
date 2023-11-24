@@ -1,5 +1,6 @@
-import { Piece, Position, TeamType, samePosition } from "../../Constants"
-import { tileIsEmptyOrOccupiedByOpponent, tileIsOccupied } from "./GeneralRules"
+import { TeamType, samePosition } from "../../Constants"
+import { Piece, Position } from "../../models"
+import { tileIsEmptyOrOccupiedByOpponent, tileIsOccupied, tileIsOccupiedByOpponent } from "./GeneralRules"
 
 export const kingMove = (initialPosition: Position, desiredPosition: Position, team: TeamType, boardState: Piece[]): boolean => {
   for (let i = 1; i < 2; i++) {
@@ -8,7 +9,7 @@ export const kingMove = (initialPosition: Position, desiredPosition: Position, t
 
     let multiplierY = (desiredPosition.y < initialPosition.y) ? -1 : (desiredPosition.y > initialPosition.y) ? 1 : 0
 
-    let passedPosition: Position = { x: initialPosition.x + (i * multiplierX), y: initialPosition.y + (i * multiplierY) }
+    let passedPosition: Position = new Position(initialPosition.x + (i * multiplierX), initialPosition.y + (i * multiplierY))
     if (samePosition(passedPosition, desiredPosition)) {
       if (tileIsEmptyOrOccupiedByOpponent(passedPosition, boardState, team)) {
         return true
@@ -21,4 +22,121 @@ export const kingMove = (initialPosition: Position, desiredPosition: Position, t
 
   }
   return false
+}
+
+export const GetPossibleKingMoves = (king: Piece, boardState: Piece[]): Position[] => {
+  const possibleMoves: Position[] = []
+
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x + i, king.position.y + i)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+
+  }
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x + i, king.position.y - i)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+
+  }
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x - i, king.position.y - i)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+
+  }
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x - i, king.position.y + i)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+
+  }
+
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x, king.position.y + i)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+  }
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x, king.position.y - i)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+  }
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x + i, king.position.y)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+  }
+  for (let i = 1; i < 2; i++) {
+
+    const destination: Position = new Position(king.position.x - i, king.position.y)
+
+    if (!tileIsOccupied(destination, boardState)) {
+      possibleMoves.push(destination)
+    } else if (tileIsOccupiedByOpponent(destination, boardState, king.team)) {
+      possibleMoves.push(destination)
+      break
+    } else {
+      break
+    }
+  }
+
+
+  return possibleMoves
 }

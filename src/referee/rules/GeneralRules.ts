@@ -1,4 +1,5 @@
-import { Piece, Position, TeamType, samePosition } from "../../Constants"
+import { TeamType, samePosition } from "../../Constants"
+import { Piece, Position } from "../../models"
 
 
 
