@@ -1,4 +1,4 @@
-import { PieceType, TeamType } from "../Constants";
+import { PieceType, TeamType } from "../Types";
 import { Position } from "./Position";
 
 export class Piece {
@@ -6,12 +6,42 @@ export class Piece {
   position: Position
   type: PieceType;
   team: TeamType;
-  enPassant?: boolean;
   possibleMoves?: Position[]
-  constructor(image: string, position: Position, type: PieceType, team: TeamType) {
+  constructor(image: string, position: Position, type: PieceType, team: TeamType, possibleMoves: Position[] = []) {
     this.image = image
     this.position = position
     this.type = type
     this.team = team
+    this.possibleMoves = possibleMoves
+  }
+
+  get isPawn(): boolean {
+    return this.type === PieceType.PAWN
+  }
+  get isRook(): boolean {
+    return this.type === PieceType.ROOK
+  }
+  get isKnight(): boolean {
+    return this.type === PieceType.KNIGHT
+  }
+  get isBishop(): boolean {
+    return this.type === PieceType.BISHOP
+  }
+  get isKing(): boolean {
+    return this.type === PieceType.KING
+  }
+  get isQueen(): boolean {
+    return this.type === PieceType.QUEEN
+  }
+
+  samePiecePosition(otherPiece: Piece): boolean {
+    return this.position.samePosition(otherPiece.position)
+  }
+  samePosition(otherPosition: Position): boolean {
+    return this.position.samePosition(otherPosition)
+  }
+
+  clone(): Piece {
+    return new Piece(this.image, this.position.clone(), this.type, this.team, this.possibleMoves?.map(m => m.clone()))
   }
 }

@@ -1,4 +1,4 @@
-import { TeamType, samePosition } from "../../Constants"
+import { TeamType } from "../../Types"
 import { Piece, Position } from "../../models"
 import { tileIsEmptyOrOccupiedByOpponent, tileIsOccupied, tileIsOccupiedByOpponent } from "./GeneralRules"
 
@@ -10,7 +10,7 @@ export const rookMove = (initialPosition: Position, desiredPosition: Position, t
 
       let passedPosition: Position = new Position(initialPosition.x, initialPosition.y + (multiplier * i))
 
-      if (samePosition(passedPosition, desiredPosition)) {
+      if (passedPosition.samePosition(desiredPosition)) {
         if (tileIsEmptyOrOccupiedByOpponent(passedPosition, boardState, team)) {
           return true
         }
@@ -29,7 +29,7 @@ export const rookMove = (initialPosition: Position, desiredPosition: Position, t
 
       let passedPosition: Position = new Position(initialPosition.x + (multiplier * i), initialPosition.y)
 
-      if (samePosition(passedPosition, desiredPosition)) {
+      if (passedPosition.samePosition(desiredPosition)) {
         if (tileIsEmptyOrOccupiedByOpponent(passedPosition, boardState, team)) {
           return true
         }

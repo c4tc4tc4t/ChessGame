@@ -1,12 +1,7 @@
 import React, { useRef, useState } from "react";
 import "./Chessboard.css";
 import Tile from "../tile/Tile";
-import {
-  HORIZONTAL_AXIS,
-  VERTICAL_AXIS,
-  GRID_SIZE,
-  samePosition,
-} from "../../Constants";
+import { HORIZONTAL_AXIS, VERTICAL_AXIS, GRID_SIZE } from "../../Constants";
 import { Piece, Position } from "../../models";
 
 interface Props {
@@ -71,8 +66,6 @@ export default function Chessboard({ playMove, pieces }: Props) {
     }
   }
 
-  //video parou no 14:30
-
   function dropPiece(e: React.MouseEvent) {
     const chessboard = chessBoardRef.current;
     if (activePiece && chessboard) {
@@ -81,12 +74,10 @@ export default function Chessboard({ playMove, pieces }: Props) {
         Math.ceil((e.clientY - chessboard.offsetTop - 800) / GRID_SIZE)
       );
 
-      const currentPiece = pieces.find((p) =>
-        samePosition(p.position, grabPosition)
-      );
+      const currentPiece = pieces.find((p) => p.samePosition(grabPosition));
 
       if (currentPiece) {
-        var sucess = playMove(currentPiece, new Position(x, y));
+        var sucess = playMove(currentPiece.clone(), new Position(x, y));
         if (!sucess) {
           activePiece.style.position = "relative";
           activePiece.style.removeProperty("top");
@@ -103,18 +94,16 @@ export default function Chessboard({ playMove, pieces }: Props) {
   for (let j = VERTICAL_AXIS.length - 1; j >= 0; j--) {
     for (let i = 0; i < HORIZONTAL_AXIS.length; i++) {
       const number = i + j + 2;
-      const piece = pieces.find((p) =>
-        samePosition(p.position, new Position(i, j))
-      );
+      const piece = pieces.find((p) => p.samePosition(new Position(i, j)));
       let image = piece ? piece.image : undefined;
 
       let currentPiece =
         activePiece !== null
-          ? pieces.find((p) => samePosition(p.position, grabPosition))
+          ? pieces.find((p) => p.samePosition(grabPosition))
           : undefined;
       let highlight = currentPiece?.possibleMoves
         ? currentPiece.possibleMoves.some((p) =>
-            samePosition(p, new Position(i, j))
+            p.samePosition(new Position(i, j))
           )
         : false;
 
