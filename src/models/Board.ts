@@ -65,12 +65,11 @@ export class Board {
 
       this.calculateAllMoves();
     } else if (validMove) {
-      //UPDATES THE PIECE POSITION
-      //AND IF A PIECE IS ATTACKED, REMOVES IT
+
       this.pieces = this.pieces.reduce((results, piece) => {
-        // Piece that we are currently moving
+
         if (piece.samePiecePosition(playedPiece)) {
-          //SPECIAL MOVE
+
           if (piece.isPawn)
             (piece as Pawn).enPassant =
               Math.abs(playedPiece.position.y - destination.y) === 2 &&
@@ -85,8 +84,7 @@ export class Board {
           results.push(piece);
         }
 
-        // The piece at the destination location
-        // Won't be pushed in the results
+
         return results;
       }, [] as Piece[]);
 

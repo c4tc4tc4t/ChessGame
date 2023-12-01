@@ -9,14 +9,6 @@ import {
   queenMove,
   rookMove,
 } from "../../referee/rules";
-import torreBlack from "../../assets/images/rook_b.png";
-import torreWhite from "../../assets/images/rook_w.png";
-import cavaloBlack from "../../assets/images/knight_b.png";
-import cavaloWhite from "../../assets/images/knight_w.png";
-import bispoBlack from "../../assets/images/bishop_b.png";
-import bispoWhite from "../../assets/images/bishop_w.png";
-import rainhaBlack from "../../assets/images/queen_b.png";
-import rainhaWhite from "../../assets/images/queen_w.png";
 import { Piece, Position } from "../../models";
 import { PieceType, TeamType } from "../../Types";
 import { Pawn } from "../../models/Pawn";
@@ -27,6 +19,8 @@ export default function Referee() {
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
 
   const modalRef = useRef<HTMLDivElement>(null);
+
+  console.log(board);
 
   useEffect(() => {
     updatePossibleMoves();
@@ -67,7 +61,12 @@ export default function Referee() {
 
     if (destination.y === promotionRow && playedPiece.isPawn) {
       modalRef.current?.classList.remove("hidden");
-      setPromotionPawn(playedPiece);
+      setPromotionPawn((previousPromotionPawn) => {
+        const clonedPlayedPiece = playedPiece.clone();
+        clonedPlayedPiece.position = destination.clone();
+
+        return clonedPlayedPiece;
+      });
     }
 
     return playedMoveIsValid;
@@ -168,53 +167,31 @@ export default function Referee() {
       return;
     }
 
-    board.pieces = board.pieces.reduce((results, piece) => {
-      if (piece.samePiecePosition(promotionPawn)) {
-        piece.type = pieceType;
-        const teamType = piece.team === TeamType.OUR ? "w" : "b";
-        let image = "";
-        switch (pieceType) {
-          case PieceType.ROOK:
-            if (teamType === "w") {
-              piece.image = torreWhite;
-            } else {
-              piece.image = torreBlack;
-            }
-            break;
-          case PieceType.BISHOP:
-            if (teamType === "w") {
-              piece.image = bispoWhite;
-            } else {
-              piece.image = bispoBlack;
-            }
-            break;
-          case PieceType.KNIGHT:
-            if (teamType === "w") {
-              piece.image = cavaloWhite;
-            } else {
-              piece.image = cavaloBlack;
-            }
-            break;
-          case PieceType.QUEEN:
-            if (teamType === "w") {
-              piece.image = rainhaWhite;
-            } else {
-              piece.image = rainhaBlack;
-            }
-            break;
+    setBoard((previousBoard) => {
+      const clonedBoard = board.clone();
+      clonedBoard.pieces = clonedBoard.pieces.reduce((results, piece) => {
+        if (piece.samePiecePosition(promotionPawn)) {
+          console.log(piece);
+          results.push(
+            new Piece(piece.position.clone(), pieceType, piece.team)
+          );
+        } else {
+          results.push(piece);
         }
-      }
-      results.push(piece);
-      return results;
-    }, [] as Piece[]);
 
-    updatePossibleMoves();
+        return results;
+      }, [] as Piece[]);
+
+      clonedBoard.calculateAllMoves();
+
+      return clonedBoard;
+    });
 
     modalRef.current?.classList.add("hidden");
   }
 
   function promotionTeamType() {
-    return promotionPawn?.team === TeamType.OUR;
+    return promotionPawn?.team === TeamType.OUR ? "w" : "b";
   }
 
   return (
@@ -223,23 +200,19 @@ export default function Referee() {
         <div className="modal-body">
           <img
             onClick={() => promotePawn(PieceType.ROOK)}
-            src={promotionTeamType() ? torreWhite : torreBlack}
-            alt=""
+            src={`/assets/images/rook_${promotionTeamType()}.png`}
           />
           <img
             onClick={() => promotePawn(PieceType.BISHOP)}
-            src={promotionTeamType() ? bispoWhite : bispoBlack}
-            alt=""
+            src={`/assets/images/bishop_${promotionTeamType()}.png`}
           />
           <img
             onClick={() => promotePawn(PieceType.KNIGHT)}
-            src={promotionTeamType() ? cavaloWhite : cavaloBlack}
-            alt=""
+            src={`/assets/images/knight_${promotionTeamType()}.png`}
           />
           <img
             onClick={() => promotePawn(PieceType.QUEEN)}
-            src={promotionTeamType() ? rainhaWhite : rainhaBlack}
-            alt=""
+            src={`/assets/images/queen_${promotionTeamType()}.png`}
           />
         </div>
       </div>

@@ -1,14 +1,13 @@
-export enum TeamType {
-  OPPONENT,
-  OUR,
+export enum PieceType {
+  PAWN = 'pawn',
+  BISHOP = 'bishop',
+  KNIGHT = 'knight',
+  ROOK = 'rook',
+  QUEEN = 'queen',
+  KING = 'king',
 }
 
-
-export enum PieceType {
-  PAWN,
-  BISHOP,
-  KNIGHT,
-  ROOK,
-  QUEEN,
-  KING,
+export enum TeamType {
+  OPPONENT = 'b',
+  OUR = 'w',
 }
