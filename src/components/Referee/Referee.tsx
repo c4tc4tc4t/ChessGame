@@ -20,24 +20,24 @@ export default function Referee() {
 
   const modalRef = useRef<HTMLDivElement>(null);
 
-  console.log(board);
-
   useEffect(() => {
-    updatePossibleMoves();
+    board.calculateAllMoves();
   }, []);
 
-  function updatePossibleMoves() {
-    board.calculateAllMoves();
-  }
-
   function playMove(playedPiece: Piece, destination: Position): boolean {
+    if (playedPiece.possibleMoves === undefined) return false;
+    if (playedPiece.team === TeamType.OUR && board.totalTurns % 2 !== 1)
+      return false;
+    if (playedPiece.team === TeamType.OPPONENT && board.totalTurns % 2 !== 0)
+      return false;
+
     let playedMoveIsValid = false;
-    const validMove = isValidMove(
-      playedPiece.position,
-      destination,
-      playedPiece.type,
-      playedPiece.team
+
+    const validMove = playedPiece.possibleMoves?.some((m) =>
+      m.samePosition(destination)
     );
+
+    if (!validMove) return false;
 
     const enPassantMove: boolean = isEnPassantMove(
       playedPiece.position,
@@ -47,14 +47,17 @@ export default function Referee() {
     );
 
     setBoard((previousBoard) => {
-      playedMoveIsValid = board.playMove(
+      const clonedBoard = board.clone();
+      clonedBoard.totalTurns += 1;
+
+      playedMoveIsValid = clonedBoard.playMove(
         enPassantMove,
         validMove,
         playedPiece,
         destination
       );
 
-      return board.clone();
+      return clonedBoard;
     });
 
     let promotionRow = playedPiece.team === TeamType.OUR ? 7 : 0;
@@ -196,6 +199,7 @@ export default function Referee() {
 
   return (
     <>
+      <div style={{ color: "white" }}>{board.totalTurns}</div>
       <div id="pawn-promotion-modal" className="hidden" ref={modalRef}>
         <div className="modal-body">
           <img

@@ -1,4 +1,3 @@
-
 import { PieceType, TeamType } from "../Types";
 import { GetPossibleBishopMoves, GetPossibleKingMoves, GetPossibleKnightMoves, GetPossiblePawnMoves, GetPossibleQueenMoves, GetPossibleRookMoves } from "../referee/rules";
 import { Pawn } from "./Pawn";
@@ -7,14 +6,66 @@ import { Position } from "./Position";
 
 export class Board {
   pieces: Piece[];
+  totalTurns: number;
 
-  constructor(pieces: Piece[]) {
+  constructor(pieces: Piece[], totalTurns: number) {
     this.pieces = pieces;
+    this.totalTurns = totalTurns
   }
+
+  get currentTeam(): TeamType {
+    return this.totalTurns % 2 === 0 ? TeamType.OPPONENT : TeamType.OUR
+  }
+
 
   calculateAllMoves() {
     for (const piece of this.pieces) {
       piece.possibleMoves = this.getValidMoves(piece, this.pieces)
+    }
+
+    this.checkCurrentTeamMoves()
+
+
+    for (const piece of this.pieces.filter(p => p.team !== this.currentTeam)) {
+      piece.possibleMoves = []
+    }
+  }
+
+  checkCurrentTeamMoves() {
+    for (const piece of this.pieces.filter(p => p.team === this.currentTeam)) {
+      if (piece.possibleMoves === undefined) continue
+
+      for (const move of piece.possibleMoves) {
+        const simulatedBoard = this.clone()
+
+        simulatedBoard.pieces = simulatedBoard.pieces.filter(p => !p.samePosition(move))
+
+        const clonedPiece = simulatedBoard.pieces.find(p => p.samePiecePosition(piece))!
+
+
+        clonedPiece.position = move.clone()
+
+        const clonedKing = simulatedBoard.pieces.find(p => p.isKing && p.team === simulatedBoard.currentTeam)!
+
+        for (const enemy of simulatedBoard.pieces.filter(p => p.team !== simulatedBoard.currentTeam)) {
+          enemy.possibleMoves = simulatedBoard.getValidMoves(enemy, simulatedBoard.pieces)
+
+          if (enemy.isPawn) {
+            if (enemy.possibleMoves.some(m => m.x !== enemy.position.x && m.samePosition(clonedKing?.position))) {
+
+              piece.possibleMoves = piece.possibleMoves?.filter(m => !m.samePosition(move))
+            }
+          } else {
+            if (enemy.possibleMoves.some(m => m.samePosition(clonedKing?.position))) {
+
+              piece.possibleMoves = piece.possibleMoves?.filter(m => !m.samePosition(move))
+            }
+          }
+
+
+
+        }
+      }
     }
   }
 
@@ -97,6 +148,6 @@ export class Board {
   }
 
   clone(): Board {
-    return new Board(this.pieces.map(p => p.clone()));
+    return new Board(this.pieces.map(p => p.clone()), this.totalTurns);
   }
 }
