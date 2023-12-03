@@ -1,5 +1,5 @@
 import { PieceType, TeamType } from "../Types";
-import { GetPossibleBishopMoves, GetPossibleKingMoves, GetPossibleKnightMoves, GetPossiblePawnMoves, GetPossibleQueenMoves, GetPossibleRookMoves } from "../referee/rules";
+import { GetPossibleBishopMoves, GetPossibleKingMoves, GetPossibleKnightMoves, GetPossiblePawnMoves, GetPossibleQueenMoves, GetPossibleRookMoves, getCastlingMoves } from "../referee/rules";
 import { Pawn } from "./Pawn";
 import { Piece } from "./Piece";
 import { Position } from "./Position";
@@ -21,6 +21,12 @@ export class Board {
   calculateAllMoves() {
     for (const piece of this.pieces) {
       piece.possibleMoves = this.getValidMoves(piece, this.pieces)
+    }
+
+    for (const king of this.pieces.filter(p => p.isKing)) {
+
+      if (king.possibleMoves === undefined) continue
+      king.possibleMoves = [...king.possibleMoves, ...getCastlingMoves(king, this.pieces)]
     }
 
     this.checkCurrentTeamMoves()
@@ -93,6 +99,24 @@ export class Board {
     playedPiece: Piece,
     destination: Position): boolean {
     const pawnDirection = playedPiece.team === TeamType.OUR ? 1 : -1;
+    const destinationPiece = this.pieces.find(p => p.samePosition(destination))
+
+    if (playedPiece.isKing && destinationPiece?.isRook && destinationPiece.team === playedPiece.team) {
+      const direction = (destinationPiece.position.x - playedPiece.position.x > 0) ? 1 : -1
+      const newKingXPosition = playedPiece.position.x + direction * 2
+
+      this.pieces = this.pieces.map(p => {
+        if (p.samePiecePosition(playedPiece)) {
+          p.position.x = newKingXPosition
+        } else if (p.samePiecePosition(destinationPiece)) {
+          p.position.x = newKingXPosition - direction
+        }
+        return p
+      })
+
+      this.calculateAllMoves()
+      return true
+    }
 
     if (enPassantMove) {
       this.pieces = this.pieces.reduce((results, piece) => {
@@ -101,6 +125,7 @@ export class Board {
             (piece as Pawn).enPassant = false;
           piece.position.x = destination.x;
           piece.position.y = destination.y;
+          piece.hasMoved = true
           results.push(piece);
         } else if (
           !piece.samePosition(new Position(destination.x, destination.y - pawnDirection))
@@ -127,6 +152,7 @@ export class Board {
               piece.type === PieceType.PAWN;
           piece.position.x = destination.x;
           piece.position.y = destination.y;
+          piece.hasMoved = true
           results.push(piece);
         } else if (!piece.samePosition(destination)) {
           if (piece.isPawn) {
