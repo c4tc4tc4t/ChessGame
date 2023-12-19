@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import Chessboard from "../chessboard/Chessboard";
-import {
-  bishopMove,
-  kingMove,
-  knightMove,
-  pawnMove,
-  queenMove,
-  rookMove,
-} from "../../referee/rules";
 import { Piece, Position } from "../../models";
 import { PieceType, TeamType } from "../../Types";
 import { Pawn } from "../../models/Pawn";
@@ -103,74 +95,12 @@ export default function Referee() {
     return false;
   }
 
-  function isValidMove(
-    initialPosition: Position,
-    desiredPosition: Position,
-    type: PieceType,
-    team: TeamType
-  ) {
-    let validMove = false;
-
-    switch (type) {
-      case PieceType.PAWN:
-        validMove = pawnMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.KNIGHT:
-        validMove = knightMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.BISHOP:
-        validMove = bishopMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.ROOK:
-        validMove = rookMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-
-      case PieceType.QUEEN:
-        validMove = queenMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.KING:
-        validMove = kingMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-    }
-
-    return validMove;
-  }
-
   function promotePawn(pieceType: PieceType) {
     if (promotionPawn === undefined) {
       return;
     }
 
-    setBoard((previousBoard) => {
+    setBoard(() => {
       const clonedBoard = board.clone();
       clonedBoard.pieces = clonedBoard.pieces.reduce((results, piece) => {
         if (piece.samePiecePosition(promotionPawn)) {
