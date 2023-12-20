@@ -18,9 +18,9 @@ export default function Referee() {
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     if (playedPiece.possibleMoves === undefined) return false;
-    if (playedPiece.team === TeamType.OUR && board.totalTurns % 2 !== 1)
+    if (playedPiece.team === TeamType.WHITE && board.totalTurns % 2 !== 1)
       return false;
-    if (playedPiece.team === TeamType.OPPONENT && board.totalTurns % 2 !== 0)
+    if (playedPiece.team === TeamType.BLACK && board.totalTurns % 2 !== 0)
       return false;
 
     let playedMoveIsValid = false;
@@ -52,7 +52,7 @@ export default function Referee() {
       return clonedBoard;
     });
 
-    let promotionRow = playedPiece.team === TeamType.OUR ? 7 : 0;
+    let promotionRow = playedPiece.team === TeamType.WHITE ? 7 : 0;
 
     if (destination.y === promotionRow && playedPiece.isPawn) {
       modalRef.current?.classList.remove("hidden");
@@ -73,7 +73,7 @@ export default function Referee() {
     type: PieceType,
     team: TeamType
   ) {
-    const pawnDirection = team === TeamType.OUR ? 1 : -1;
+    const pawnDirection = team === TeamType.WHITE ? 1 : -1;
 
     if (type === PieceType.PAWN) {
       if (
@@ -124,7 +124,7 @@ export default function Referee() {
   }
 
   function promotionTeamType() {
-    return promotionPawn?.team === TeamType.OUR ? "w" : "b";
+    return promotionPawn?.team === TeamType.WHITE ? "w" : "b";
   }
 
   return (
