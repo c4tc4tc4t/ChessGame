@@ -51,7 +51,7 @@ describe("Bishop possible moves test", () => {
 
       //Testa o os possiveis movimentos do bispo branco no centro do tabuleiro
       expect(possibleMovesWhiteCenter).toEqual(expectedPositionsCenter);
-      //Testa o os possiveis movimentos do bispo no preto centro do tabuleiro
+      //Testa o os possiveis movimentos do bispo preto centro do tabuleiro
       expect(possibleMovesBlackCenter).toEqual(expectedPositionsCenter);
     });
 
@@ -91,7 +91,7 @@ describe("Bishop possible moves test", () => {
 
       //Testa o os possiveis movimentos do bispo branco no canto do tabuleiro
       expect(possibleMovesWhiteCorner).toEqual(expectedPositionsCorner);
-      //Testa o os possiveis movimentos do bispo no preto canto do tabuleiro
+      //Testa o os possiveis movimentos do bispo preto canto do tabuleiro
       expect(possibleMovesBlackCorner).toEqual(expectedPositionsCorner);
     });
 
@@ -132,7 +132,7 @@ describe("Bishop possible moves test", () => {
 
       //Testa o os possiveis movimentos do bispo branco na borda do tabuleiro
       expect(possibleMovesWhiteEdge).toEqual(expectedPositionsEdge);
-      //Testa o os possiveis movimentos do bispo no preto na borda do tabuleiro
+      //Testa o os possiveis movimentos do bispo preto na borda do tabuleiro
       expect(possibleMovesBlackEdge).toEqual(expectedPositionsEdge);
     });
   });

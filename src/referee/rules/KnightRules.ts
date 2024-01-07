@@ -1,49 +1,35 @@
-import { TeamType } from "../../Types"
 import { Piece, Position } from "../../models"
 import { tileIsEmptyOrOccupiedByOpponent } from "./GeneralRules"
 
-export const knightMove = (initialPosition: Position, desiredPosition: Position, team: TeamType, boardState: Piece[]): boolean => {
-
-
-  for (let i = -1; i < 2; i += 2) {
-    for (let j = -1; j < 2; j += 2) {
-      //top and bottom
-      if (desiredPosition.y - initialPosition.y === 2 * i) {
-        if (desiredPosition.x - initialPosition.x === j) {
-          if (tileIsEmptyOrOccupiedByOpponent(desiredPosition, boardState, team)) {
-            return true
-          }
-        }
-      }
-
-      //right and left
-      if (desiredPosition.x - initialPosition.x === 2 * i) {
-        if (desiredPosition.y - initialPosition.y === j) {
-          if (tileIsEmptyOrOccupiedByOpponent(desiredPosition, boardState, team)) {
-            return true
-          }
-        }
-      }
-    }
-  }
-  return false
-
-}
 
 export const GetPossibleKnightMoves = (knight: Piece, boardState: Piece[]): Position[] => {
   const possibleMoves: Position[] = []
 
-  for (let i = -1; i < 2; i += 2) {
-    for (let j = -1; j < 2; j += 2) {
-      const verticalMove: Position = new Position(knight.position.x + j, knight.position.y + i * 2)
-      const horizontalMove: Position = new Position(knight.position.x + i * 2, knight.position.y + j)
+  const knightMoves = [
+    { x: 1, y: 2 },
+    { x: 2, y: 1 },
+    { x: -1, y: 2 },
+    { x: -2, y: 1 },
+    { x: 1, y: -2 },
+    { x: 2, y: -1 },
+    { x: -1, y: -2 },
+    { x: -2, y: -1 }
+  ]
 
-      if (tileIsEmptyOrOccupiedByOpponent(verticalMove, boardState, knight.team)) {
-        possibleMoves.push(verticalMove)
-      }
-      if (tileIsEmptyOrOccupiedByOpponent(horizontalMove, boardState, knight.team)) {
-        possibleMoves.push(horizontalMove)
-      }
+  for (const move of knightMoves) {
+    const newPosition: Position = new Position(
+      knight.position.x + move.x,
+      knight.position.y + move.y
+    )
+
+    if (
+      newPosition.x >= 0 &&
+      newPosition.x < 8 &&
+      newPosition.y >= 0 &&
+      newPosition.y < 8 &&
+      tileIsEmptyOrOccupiedByOpponent(newPosition, boardState, knight.team)
+    ) {
+      possibleMoves.push(newPosition)
     }
   }
 

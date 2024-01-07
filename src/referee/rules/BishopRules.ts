@@ -1,30 +1,6 @@
 
-import { TeamType } from "../../Types"
 import { Piece, Position } from "../../models"
-import { tileIsEmptyOrOccupiedByOpponent, tileIsOccupied, tileIsOccupiedByOpponent } from "./GeneralRules"
-
-// export const bishopMove = (initialPosition: Position, desiredPosition: Position, team: TeamType, boardState: Piece[]): boolean => {
-//   for (let i = 1; i < 8; i++) {
-
-//     let multiplierX = (desiredPosition.x < initialPosition.x) ? -1 : 1
-//     let multiplierY = (desiredPosition.y < initialPosition.y) ? -1 : 1
-
-
-//     let passedPosition: Position = new Position(initialPosition.x + (i * multiplierX), initialPosition.y + (i * multiplierY))
-//     if (passedPosition.samePosition(desiredPosition)) {
-//       if (tileIsEmptyOrOccupiedByOpponent(passedPosition, boardState, team)) {
-//         return true
-//       }
-//     } else {
-//       if (tileIsOccupied(passedPosition, boardState)) {
-//         break
-//       }
-//     }
-
-//   }
-
-//   return false
-// }
+import { tileIsOccupied, tileIsOccupiedByOpponent } from "./GeneralRules"
 
 export const GetPossibleBishopMoves = (bishop: Piece, boardState: Piece[]): Position[] => {
   const possibleMoves: Position[] = []
@@ -33,7 +9,7 @@ export const GetPossibleBishopMoves = (bishop: Piece, boardState: Piece[]): Posi
 
     const destination: Position = new Position(bishop.position.x - i, bishop.position.y - i)
 
-    if(destination.x >= 0 && destination.y >= 0){
+    if (destination.x >= 0 && destination.y >= 0) {
 
       if (!tileIsOccupied(destination, boardState)) {
         possibleMoves.push(destination)
@@ -50,7 +26,7 @@ export const GetPossibleBishopMoves = (bishop: Piece, boardState: Piece[]): Posi
 
     const destination: Position = new Position(bishop.position.x + i, bishop.position.y + i)
 
-    if(destination.x <= 7 && destination.y <= 7){
+    if (destination.x <= 7 && destination.y <= 7) {
 
       if (!tileIsOccupied(destination, boardState)) {
         possibleMoves.push(destination)
@@ -67,7 +43,7 @@ export const GetPossibleBishopMoves = (bishop: Piece, boardState: Piece[]): Posi
 
     const destination: Position = new Position(bishop.position.x + i, bishop.position.y - i)
 
-    if(destination.x <= 7 && destination.y >= 0){
+    if (destination.x <= 7 && destination.y >= 0) {
 
       if (!tileIsOccupied(destination, boardState)) {
         possibleMoves.push(destination)
@@ -80,12 +56,12 @@ export const GetPossibleBishopMoves = (bishop: Piece, boardState: Piece[]): Posi
     }
 
   }
- 
+
   for (let i = 1; i < 8; i++) {
 
     const destination: Position = new Position(bishop.position.x - i, bishop.position.y + i)
 
-    if(destination.x >= 0 && destination.y <= 7){
+    if (destination.x >= 0 && destination.y <= 7) {
 
       if (!tileIsOccupied(destination, boardState)) {
         possibleMoves.push(destination)
