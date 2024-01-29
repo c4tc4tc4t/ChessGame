@@ -38,7 +38,7 @@ export default function Referee() {
       playedPiece.team
     );
 
-    setBoard((previousBoard) => {
+    setBoard(() => {
       const clonedBoard = board.clone();
       clonedBoard.totalTurns += 1;
 
