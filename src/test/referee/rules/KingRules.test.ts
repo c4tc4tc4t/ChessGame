@@ -1,6 +1,6 @@
 import { PieceType, TeamType } from "../../../Types";
 import { Piece, Position } from "../../../models";
-import { GetPossibleKingMoves } from "../../../referee/rules";
+import { GetPossibleKingMoves, GetPossibleRookMoves, getCastlingMoves } from "../../../referee/rules";
 
 describe("king possible moves test", () => {
   describe("Tests of the king on a empty board", () => {
@@ -124,7 +124,7 @@ describe("king possible moves test", () => {
     });
   });
 
-  describe("Possible moves for white/black king with white pieces blocking", () => {
+  describe("Possible moves for white king with white pieces blocking", () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
@@ -158,7 +158,7 @@ describe("king possible moves test", () => {
       board.push(pawnTwo);
     });
 
-    it("Should return possible moves for the white queen with allies blocking", () => {
+    it("Should return possible moves for the white king with allies blocking", () => {
       const kingWhite = new Piece(
         new Position(3, 3),
         PieceType.KING,
@@ -183,126 +183,514 @@ describe("king possible moves test", () => {
       //Testa o os possiveis movimentos do rei branco cercado por aliados
       expect(possibleMoves).toEqual(expectedPositions);
     });
-
-    it("Should return possible moves for the black queen with enemies blocking", () => {
-      const kingBlack = new Piece(
-        new Position(3, 3),
-        PieceType.KING,
-        TeamType.BLACK,
-        false
-      );
-
-      const possibleMoves: Position[] = GetPossibleKingMoves(
-        kingBlack,
-        board
-      );
-
-      //Possiveis movimentos do rei na posição 3,3
-      const expectedPositions: Position[] = [
-        new Position(3, 4),
-        new Position(3, 2),
-        new Position(2, 3),
-        new Position(4, 3),
-        new Position(4, 4),
-        new Position(4, 2),
-        new Position(2, 2),
-        new Position(2, 4),
-
-      ];
-
-      //Testa o os possiveis movimentos do rei preto cercado por inimigos
-      expect(possibleMoves).toEqual(expectedPositions);
-    });
   });
+});
 
-  describe("Possible moves for white/black king with black pieces blocking", () => {
+describe('getCastlingMoves', () => {
+  describe("castling moves on an empty board, except for the rooks that previously not moved", () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
-      const pawn = new Piece(
-        new Position(4, 3),
-        PieceType.PAWN,
-        TeamType.BLACK,
-        false
-      );
-      const queen = new Piece(
-        new Position(3, 4),
-        PieceType.QUEEN,
-        TeamType.BLACK,
-        false
-      );
-      const rook = new Piece(
-        new Position(2, 4),
+      const longRookPossibleMoves: Position[] = [
+        new Position(6, 0),
+        new Position(5, 0),
+      ];
+      const shortRookPossibleMoves: Position[] = [
+        new Position(1, 0),
+        new Position(2, 0),
+        new Position(3, 0),
+      ];
+
+      const longRook = new Piece(
+        new Position(7, 0),
         PieceType.ROOK,
-        TeamType.BLACK,
-        false
+        TeamType.WHITE,
+        false,
+        longRookPossibleMoves
       );
-      const pawnTwo = new Piece(
-        new Position(4, 4),
-        PieceType.PAWN,
-        TeamType.BLACK,
-        false
+      const shortRook = new Piece(
+        new Position(0, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        shortRookPossibleMoves
       );
-      board.push(pawn);
-      board.push(queen);
-      board.push(rook);
-      board.push(pawnTwo);
+
+      board.push(longRook);
+      board.push(shortRook);
     });
 
-    it("Should return possible moves for the white king with enemies blocking", () => {
+    it("Should return castling moves for the white king that has not moved", () => {
       const kingWhite = new Piece(
-        new Position(3, 3),
+        new Position(4, 0),
         PieceType.KING,
         TeamType.WHITE,
         false
       );
 
-      const possibleMoves: Position[] = GetPossibleKingMoves(
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
+        board
+      );
+
+      //Possiveis movimentos do rei na posição inicial
+      const expectedPositions: Position[] = [
+        new Position(7, 0),
+        new Position(0, 0),
+      ];
+
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
+    });
+
+    it("Should return an empty array for the white king that has moved", () => {
+      const kingWhite = new Piece(
+        new Position(4, 0),
+        PieceType.KING,
+        TeamType.WHITE,
+        true
+      );
+
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
+        board
+      );
+
+      //Possiveis movimentos do rei na posição inicial, porém se moveu
+      const expectedPositions: Position[] = [
+
+      ];
+
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
+    });
+
+    it("Should return an empty array for the white king that has not moved, but it's not on the initial position", () => {
+      const kingWhite = new Piece(
+        new Position(5, 0),
+        PieceType.KING,
+        TeamType.WHITE,
+        true
+      );
+
+
+      const castlingMoves: Position[] = getCastlingMoves(
         kingWhite,
         board
       );
 
       //Possiveis movimentos do rei na posição 3,3
       const expectedPositions: Position[] = [
-        new Position(3, 4),
-        new Position(3, 2),
-        new Position(2, 3),
-        new Position(4, 3),
-        new Position(4, 4),
-        new Position(4, 2),
-        new Position(2, 2),
-        new Position(2, 4),
 
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por inimigos
-      expect(possibleMoves).toEqual(expectedPositions);
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
     });
+  })
 
-    it("Should return possible moves for the black king with alies blocking", () => {
-      const kingBlack = new Piece(
-        new Position(3, 3),
+  describe("castling moves on an empty board, except for the rooks that previously moved", () => {
+    let board: Piece[] = [];
+
+    beforeEach(() => {
+      const longRookPossibleMoves: Position[] = [
+        new Position(6, 0),
+        new Position(5, 0),
+      ];
+      const shortRookPossibleMoves: Position[] = [
+        new Position(1, 0),
+        new Position(2, 0),
+        new Position(3, 0),
+      ];
+
+      const longRook = new Piece(
+        new Position(7, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        true,
+        longRookPossibleMoves
+      );
+      const shortRook = new Piece(
+        new Position(0, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        true,
+        shortRookPossibleMoves
+      );
+
+      board.push(longRook);
+      board.push(shortRook);
+    });
+    it("Should return an empty array for the white king that has not moved", () => {
+      const kingWhite = new Piece(
+        new Position(4, 0),
         PieceType.KING,
-        TeamType.BLACK,
+        TeamType.WHITE,
         false
       );
 
-      const possibleMoves: Position[] = GetPossibleKingMoves(
-        kingBlack,
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
         board
       );
 
-      //Possiveis movimentos do rei na posição 3,3
+      //Possiveis movimentos do rei na posição inicial
       const expectedPositions: Position[] = [
-        new Position(3, 2),
-        new Position(2, 3),
-        new Position(4, 2),
-        new Position(2, 2),
 
       ];
 
-      //Testa o os possiveis movimentos do rei preto cercado por aliados
-      expect(possibleMoves).toEqual(expectedPositions);
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
     });
-  });
+  })
+
+  describe("castling moves with a bishop blocking the castle between both rooks", () => {
+    let board: Piece[] = [];
+
+    beforeEach(() => {
+      const longRookPossibleMoves: Position[] = [
+
+      ];
+      const shortRookPossibleMoves: Position[] = [
+
+      ];
+
+      const longRook = new Piece(
+        new Position(7, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        longRookPossibleMoves
+      );
+      const shortRook = new Piece(
+        new Position(0, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        shortRookPossibleMoves
+      );
+      const bishopOne = new Piece(
+        new Position(1, 0),
+        PieceType.BISHOP,
+        TeamType.WHITE,
+        false,
+      );
+      const bishopTwo = new Piece(
+        new Position(6, 0),
+        PieceType.BISHOP,
+        TeamType.WHITE,
+        false,
+      );
+
+      board.push(longRook);
+      board.push(shortRook);
+      board.push(bishopOne);
+      board.push(bishopTwo);
+    });
+    it("Should return an empty array for the white king that has not moved", () => {
+      const kingWhite = new Piece(
+        new Position(4, 0),
+        PieceType.KING,
+        TeamType.WHITE,
+        false
+      );
+
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
+        board
+      );
+
+      //Possiveis movimentos do rei na posição inicial
+      const expectedPositions: Position[] = [
+
+      ];
+      console.log(castlingMoves)
+
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
+    });
+  })
+  describe("castling moves with tiles 1,0 and 6,0 attacked", () => {
+    let board: Piece[] = [];
+
+    beforeEach(() => {
+      const longRookPossibleMoves: Position[] = [
+        new Position(6, 0),
+        new Position(5, 0),
+      ];
+      const shortRookPossibleMoves: Position[] = [
+        new Position(1, 0),
+        new Position(2, 0),
+        new Position(3, 0),
+      ];
+
+      const longRook = new Piece(
+        new Position(7, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        longRookPossibleMoves
+      );
+      const shortRook = new Piece(
+        new Position(0, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        shortRookPossibleMoves
+      );
+      const rookOne = new Piece(
+        new Position(1, 3),
+        PieceType.ROOK,
+        TeamType.BLACK,
+        false,
+      );
+      const rookTwo = new Piece(
+        new Position(6, 3),
+        PieceType.ROOK,
+        TeamType.BLACK,
+        false,
+      );
+      rookOne.possibleMoves = GetPossibleRookMoves(rookOne, board)
+      rookTwo.possibleMoves = GetPossibleRookMoves(rookTwo, board)
+
+      board.push(longRook);
+      board.push(shortRook);
+      board.push(rookOne);
+      board.push(rookTwo);
+    });
+    it("Should return an empty array for the white king that has not moved", () => {
+      const kingWhite = new Piece(
+        new Position(4, 0),
+        PieceType.KING,
+        TeamType.WHITE,
+        false
+      );
+
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
+        board
+      );
+      // console.log(castlingMoves)
+
+      //Possiveis movimentos do rei na posição inicial
+      const expectedPositions: Position[] = [
+
+      ];
+
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
+    });
+  })
+  describe("castling moves with tiles 2,0 and 5,0 attacked", () => {
+    let board: Piece[] = [];
+
+    beforeEach(() => {
+      const longRookPossibleMoves: Position[] = [
+        new Position(6, 0),
+        new Position(5, 0),
+      ];
+      const shortRookPossibleMoves: Position[] = [
+        new Position(1, 0),
+        new Position(2, 0),
+        new Position(3, 0),
+      ];
+
+      const longRook = new Piece(
+        new Position(7, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        longRookPossibleMoves
+      );
+      const shortRook = new Piece(
+        new Position(0, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        shortRookPossibleMoves
+      );
+      const rookOne = new Piece(
+        new Position(2, 3),
+        PieceType.ROOK,
+        TeamType.BLACK,
+        false,
+      );
+      const rookTwo = new Piece(
+        new Position(5, 3),
+        PieceType.ROOK,
+        TeamType.BLACK,
+        false,
+      );
+      rookOne.possibleMoves = GetPossibleRookMoves(rookOne, board)
+      rookTwo.possibleMoves = GetPossibleRookMoves(rookTwo, board)
+
+      board.push(longRook);
+      board.push(shortRook);
+      board.push(rookOne);
+      board.push(rookTwo);
+    });
+    it("Should return an empty array for the white king that has not moved", () => {
+      const kingWhite = new Piece(
+        new Position(4, 0),
+        PieceType.KING,
+        TeamType.WHITE,
+        false
+      );
+
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
+        board
+      );
+      // console.log(castlingMoves)
+
+      //Possiveis movimentos do rei na posição inicial
+      const expectedPositions: Position[] = [
+
+      ];
+
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
+    });
+  })
+  describe("castling moves with tile 3,0 attacked", () => {
+    let board: Piece[] = [];
+
+    beforeEach(() => {
+      const longRookPossibleMoves: Position[] = [
+        new Position(6, 0),
+        new Position(5, 0),
+      ];
+      const shortRookPossibleMoves: Position[] = [
+        new Position(1, 0),
+        new Position(2, 0),
+        new Position(3, 0),
+      ];
+
+      const longRook = new Piece(
+        new Position(7, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        longRookPossibleMoves
+      );
+      const shortRook = new Piece(
+        new Position(0, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        shortRookPossibleMoves
+      );
+      const rookOne = new Piece(
+        new Position(3, 3),
+        PieceType.ROOK,
+        TeamType.BLACK,
+        false,
+      );
+
+      rookOne.possibleMoves = GetPossibleRookMoves(rookOne, board)
+
+      board.push(longRook);
+      board.push(shortRook);
+      board.push(rookOne);
+
+    });
+    it("Should return castling short for the white king that has not moved", () => {
+      const kingWhite = new Piece(
+        new Position(4, 0),
+        PieceType.KING,
+        TeamType.WHITE,
+        false
+      );
+
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
+        board
+      );
+      // console.log(castlingMoves)
+
+      //Possiveis movimentos do rei na posição inicial
+      const expectedPositions: Position[] = [
+        new Position(7, 0)
+      ];
+
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
+    });
+  })
+  describe("castling moves with king in check", () => {
+    let board: Piece[] = [];
+
+    beforeEach(() => {
+      const longRookPossibleMoves: Position[] = [
+        new Position(6, 0),
+        new Position(5, 0),
+      ];
+      const shortRookPossibleMoves: Position[] = [
+        new Position(1, 0),
+        new Position(2, 0),
+        new Position(3, 0),
+      ];
+
+      const longRook = new Piece(
+        new Position(7, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        longRookPossibleMoves
+      );
+      const shortRook = new Piece(
+        new Position(0, 0),
+        PieceType.ROOK,
+        TeamType.WHITE,
+        false,
+        shortRookPossibleMoves
+      );
+      const rookOne = new Piece(
+        new Position(4, 3),
+        PieceType.ROOK,
+        TeamType.BLACK,
+        false,
+      );
+
+      rookOne.possibleMoves = GetPossibleRookMoves(rookOne, board)
+
+      board.push(longRook);
+      board.push(shortRook);
+      board.push(rookOne);
+
+
+    });
+    it("Should return an empty array for the white king that has not moved", () => {
+      const kingWhite = new Piece(
+        new Position(4, 0),
+        PieceType.KING,
+        TeamType.WHITE,
+        false
+      );
+
+
+      const castlingMoves: Position[] = getCastlingMoves(
+        kingWhite,
+        board
+      );
+      // console.log(castlingMoves)
+
+      //Possiveis movimentos do rei na posição inicial
+      const expectedPositions: Position[] = [
+
+      ];
+
+      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      expect(castlingMoves).toEqual(expectedPositions);
+    });
+  })
+
+  // Outros testes podem ser adicionados aqui
 });

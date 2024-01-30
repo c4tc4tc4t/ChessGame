@@ -174,12 +174,24 @@ export const getCastlingMoves = (king: Piece, boardstate: Piece[]): Position[] =
 
   if (king.hasMoved) return possibleMoves;
 
+  // verify if king is in check
+  const isKingInCheck = (king: Piece, boardstate: Piece[]) => {
+    return boardstate
+      .filter(p => p.team !== king.team)
+      .some(enemy => enemy.possibleMoves?.some(move => king.samePosition(move)));
+  }
+
+  if (isKingInCheck(king, boardstate)) return possibleMoves;
+
   // We get the rooks from the king's team which haven't moved
   const rooks = boardstate.filter(p => p.isRook
     && p.team === king.team && !p.hasMoved);
 
+
+
   // Loop through the rooks
   for (const rook of rooks) {
+
     // Determine if we need to go to the right or the left side
     const direction = (rook.position.x - king.position.x > 0) ? 1 : -1;
 
@@ -219,7 +231,6 @@ export const getCastlingMoves = (king: Piece, boardstate: Piece[]): Position[] =
     // We now want to add it as a possible move!
     possibleMoves.push(rook.position.clone());
   }
-
 
   return possibleMoves;
 }
