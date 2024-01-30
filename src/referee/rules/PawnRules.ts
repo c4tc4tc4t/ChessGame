@@ -3,58 +3,6 @@ import { Piece, Position } from "../../models";
 import { Pawn } from "../../models/Pawn";
 import { tileIsOccupied, tileIsOccupiedByOpponent } from "./GeneralRules";
 
-export const pawnMove = (
-  initialPosition: Position,
-  desiredPosition: Position,
-  team: TeamType,
-  boardState: Piece[]
-): boolean => {
-  const specialRow = team === TeamType.WHITE ? 1 : 6;
-  const pawnDirection = team === TeamType.WHITE ? 1 : -1;
-
-  //Movement Logic
-  if (
-    initialPosition.x === desiredPosition.x &&
-    initialPosition.y === specialRow &&
-    desiredPosition.y - initialPosition.y === 2 * pawnDirection
-  ) {
-    if (
-      !tileIsOccupied(desiredPosition, boardState) &&
-      !tileIsOccupied(
-        new Position(desiredPosition.x, desiredPosition.y - pawnDirection),
-        boardState
-      )
-    ) {
-      return true;
-    }
-  } else if (
-    initialPosition.x === desiredPosition.x &&
-    desiredPosition.y - initialPosition.y === pawnDirection
-  ) {
-    if (!tileIsOccupied(desiredPosition, boardState)) {
-      return true;
-    }
-  }
-  //Attack Logic
-  else if (
-    desiredPosition.x - initialPosition.x === -1 &&
-    desiredPosition.y - initialPosition.y === pawnDirection
-  ) {
-    if (tileIsOccupiedByOpponent(desiredPosition, boardState, team)) {
-      return true;
-    }
-  } else if (
-    desiredPosition.x - initialPosition.x === 1 &&
-    desiredPosition.y - initialPosition.y === pawnDirection
-  ) {
-    if (tileIsOccupiedByOpponent(desiredPosition, boardState, team)) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
 export const GetPossiblePawnMoves = (
   pawn: Piece,
   boardState: Piece[]
@@ -89,32 +37,40 @@ export const GetPossiblePawnMoves = (
     pawn.position.y
   );
 
-  if (!tileIsOccupied(normalMove, boardState)) {
+  // Verificar se o movimento normal está dentro dos limites do tabuleiro
+  if (normalMove.y >= 0 && normalMove.y <= 7 && !tileIsOccupied(normalMove, boardState)) {
     possibleMoves.push(normalMove);
 
+    // Verificar se o movimento especial está dentro dos limites do tabuleiro
     if (
       pawn.position.y === specialRow &&
+      specialMove.y >= 0 && specialMove.y <= 7 &&
       !tileIsOccupied(specialMove, boardState)
     ) {
       possibleMoves.push(specialMove);
     }
   }
 
-  if (tileIsOccupiedByOpponent(upperLeftAttack, boardState, pawn.team)) {
-    possibleMoves.push(upperLeftAttack);
-  } else if (!tileIsOccupied(upperLeftAttack, boardState)) {
-    const leftPiece = boardState.find((p) => p.samePosition(leftPosition));
-    if (leftPiece !== null && (leftPiece as Pawn)?.enPassant) {
+  // Verificar se os movimentos de ataque estão dentro dos limites do tabuleiro
+  if (upperLeftAttack.x >= 0 && upperLeftAttack.y >= 0 && upperLeftAttack.y <= 7) {
+    if (tileIsOccupiedByOpponent(upperLeftAttack, boardState, pawn.team)) {
       possibleMoves.push(upperLeftAttack);
+    } else if (!tileIsOccupied(upperLeftAttack, boardState) && leftPosition.x >= 0) {
+      const leftPiece = boardState.find((p) => p.samePosition(leftPosition));
+      if (leftPiece !== null && (leftPiece as Pawn)?.enPassant) {
+        possibleMoves.push(upperLeftAttack);
+      }
     }
   }
 
-  if (tileIsOccupiedByOpponent(upperRightAttack, boardState, pawn.team)) {
-    possibleMoves.push(upperRightAttack);
-  } else if (!tileIsOccupied(upperRightAttack, boardState)) {
-    const rightPiece = boardState.find((p) => p.samePosition(rightPosition));
-    if (rightPiece !== null && (rightPiece as Pawn)?.enPassant) {
+  if (upperRightAttack.x <= 7 && upperRightAttack.y >= 0 && upperRightAttack.y <= 7) {
+    if (tileIsOccupiedByOpponent(upperRightAttack, boardState, pawn.team)) {
       possibleMoves.push(upperRightAttack);
+    } else if (!tileIsOccupied(upperRightAttack, boardState) && rightPosition.x <= 7) {
+      const rightPiece = boardState.find((p) => p.samePosition(rightPosition));
+      if (rightPiece !== null && (rightPiece as Pawn)?.enPassant) {
+        possibleMoves.push(upperRightAttack);
+      }
     }
   }
 

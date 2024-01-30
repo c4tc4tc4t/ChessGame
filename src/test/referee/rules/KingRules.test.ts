@@ -191,6 +191,7 @@ describe('getCastlingMoves', () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
+      //criando os movimentos das torres manualmente, pois o rei será inserido depois
       const longRookPossibleMoves: Position[] = [
         new Position(6, 0),
         new Position(5, 0),
@@ -201,6 +202,7 @@ describe('getCastlingMoves', () => {
         new Position(3, 0),
       ];
 
+      //Criando ambas as torres para o roque
       const longRook = new Piece(
         new Position(7, 0),
         PieceType.ROOK,
@@ -240,7 +242,7 @@ describe('getCastlingMoves', () => {
         new Position(0, 0),
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
 
@@ -263,7 +265,7 @@ describe('getCastlingMoves', () => {
 
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
 
@@ -286,7 +288,7 @@ describe('getCastlingMoves', () => {
 
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
   })
@@ -295,6 +297,7 @@ describe('getCastlingMoves', () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
+      //criando os movimentos das torres manualmente, pois o rei será inserido depois
       const longRookPossibleMoves: Position[] = [
         new Position(6, 0),
         new Position(5, 0),
@@ -305,6 +308,7 @@ describe('getCastlingMoves', () => {
         new Position(3, 0),
       ];
 
+      //Criando ambas as torres para o roque
       const longRook = new Piece(
         new Position(7, 0),
         PieceType.ROOK,
@@ -342,7 +346,7 @@ describe('getCastlingMoves', () => {
 
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
   })
@@ -351,6 +355,7 @@ describe('getCastlingMoves', () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
+      //criando os movimentos das torres manualmente, pois o rei será inserido depois
       const longRookPossibleMoves: Position[] = [
 
       ];
@@ -358,6 +363,7 @@ describe('getCastlingMoves', () => {
 
       ];
 
+      //Criando ambas as torres para o roque
       const longRook = new Piece(
         new Position(7, 0),
         PieceType.ROOK,
@@ -410,7 +416,7 @@ describe('getCastlingMoves', () => {
       ];
       console.log(castlingMoves)
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
   })
@@ -418,6 +424,7 @@ describe('getCastlingMoves', () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
+      //criando os movimentos das torres manualmente, pois o rei será inserido depois
       const longRookPossibleMoves: Position[] = [
         new Position(6, 0),
         new Position(5, 0),
@@ -428,6 +435,7 @@ describe('getCastlingMoves', () => {
         new Position(3, 0),
       ];
 
+      //Criando ambas as torres para o roque
       const longRook = new Piece(
         new Position(7, 0),
         PieceType.ROOK,
@@ -482,7 +490,7 @@ describe('getCastlingMoves', () => {
 
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
   })
@@ -490,6 +498,7 @@ describe('getCastlingMoves', () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
+      //criando os movimentos das torres manualmente, pois o rei será inserido depois
       const longRookPossibleMoves: Position[] = [
         new Position(6, 0),
         new Position(5, 0),
@@ -500,6 +509,7 @@ describe('getCastlingMoves', () => {
         new Position(3, 0),
       ];
 
+      //Criando ambas as torres para o roque
       const longRook = new Piece(
         new Position(7, 0),
         PieceType.ROOK,
@@ -554,7 +564,7 @@ describe('getCastlingMoves', () => {
 
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
   })
@@ -562,6 +572,7 @@ describe('getCastlingMoves', () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
+      //criando os movimentos das torres manualmente, pois o rei será inserido depois
       const longRookPossibleMoves: Position[] = [
         new Position(6, 0),
         new Position(5, 0),
@@ -572,6 +583,7 @@ describe('getCastlingMoves', () => {
         new Position(3, 0),
       ];
 
+      //Criando ambas as torres para o roque
       const longRook = new Piece(
         new Position(7, 0),
         PieceType.ROOK,
@@ -620,7 +632,7 @@ describe('getCastlingMoves', () => {
         new Position(7, 0)
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
   })
@@ -628,6 +640,7 @@ describe('getCastlingMoves', () => {
     let board: Piece[] = [];
 
     beforeEach(() => {
+      //criando os movimentos das torres manualmente, pois o rei será inserido depois
       const longRookPossibleMoves: Position[] = [
         new Position(6, 0),
         new Position(5, 0),
@@ -638,6 +651,7 @@ describe('getCastlingMoves', () => {
         new Position(3, 0),
       ];
 
+      //Criando ambas as torres para o roque
       const longRook = new Piece(
         new Position(7, 0),
         PieceType.ROOK,
@@ -687,10 +701,9 @@ describe('getCastlingMoves', () => {
 
       ];
 
-      //Testa o os possiveis movimentos do rei branco cercado por aliados
+      //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
     });
   })
 
-  // Outros testes podem ser adicionados aqui
 });
