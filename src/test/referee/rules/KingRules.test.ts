@@ -414,7 +414,6 @@ describe('getCastlingMoves', () => {
       const expectedPositions: Position[] = [
 
       ];
-      console.log(castlingMoves)
 
       //Testa o movimento de roque do rei em ambos os lados
       expect(castlingMoves).toEqual(expectedPositions);
@@ -483,7 +482,6 @@ describe('getCastlingMoves', () => {
         kingWhite,
         board
       );
-      // console.log(castlingMoves)
 
       //Possiveis movimentos do rei na posição inicial
       const expectedPositions: Position[] = [
@@ -557,7 +555,6 @@ describe('getCastlingMoves', () => {
         kingWhite,
         board
       );
-      // console.log(castlingMoves)
 
       //Possiveis movimentos do rei na posição inicial
       const expectedPositions: Position[] = [
@@ -625,7 +622,6 @@ describe('getCastlingMoves', () => {
         kingWhite,
         board
       );
-      // console.log(castlingMoves)
 
       //Possiveis movimentos do rei na posição inicial
       const expectedPositions: Position[] = [
@@ -694,7 +690,6 @@ describe('getCastlingMoves', () => {
         kingWhite,
         board
       );
-      // console.log(castlingMoves)
 
       //Possiveis movimentos do rei na posição inicial
       const expectedPositions: Position[] = [
