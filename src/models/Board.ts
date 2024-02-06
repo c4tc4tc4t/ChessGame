@@ -51,6 +51,7 @@ export class Board {
     for (const piece of this.pieces.filter(
       (p) => p.team === this.currentTeam
     )) {
+      console.log(this.currentTeam)
       if (piece.possibleMoves === undefined) continue;
 
       for (const move of piece.possibleMoves) {
@@ -60,15 +61,14 @@ export class Board {
           (p) => !p.samePosition(move)
         );
 
-        const clonedPiece = simulatedBoard.pieces.find((p) =>
+        simulatedBoard.pieces.find((p) =>
           p.samePiecePosition(piece)
-        )!;
-
-        clonedPiece.position = move.clone();
+        )!.position = move.clone()
 
         const clonedKing = simulatedBoard.pieces.find(
           (p) => p.isKing && p.team === simulatedBoard.currentTeam
         )!;
+
 
         for (const enemy of simulatedBoard.pieces.filter(
           (p) => p.team !== simulatedBoard.currentTeam
@@ -91,14 +91,17 @@ export class Board {
               );
             }
           } else {
+
             if (
               enemy.possibleMoves.some((m) =>
                 m.samePosition(clonedKing?.position)
               )
             ) {
+
               piece.possibleMoves = piece.possibleMoves?.filter(
                 (m) => !m.samePosition(move)
               );
+
             }
           }
         }

@@ -15,7 +15,7 @@ describe('clone method of Pawn class tests', () => {
   it('should create a clone with the same x and y values of Position', () => {
 
     const clonedPosition = originalPawn.clone();
-    console.log(clonedPosition)
+
     expect(clonedPosition.position.x).toBe(originalPawn.position.x);
     expect(clonedPosition.position.y).toBe(originalPawn.position.y);
   });
