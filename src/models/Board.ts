@@ -51,7 +51,6 @@ export class Board {
     for (const piece of this.pieces.filter(
       (p) => p.team === this.currentTeam
     )) {
-      console.log(this.currentTeam)
       if (piece.possibleMoves === undefined) continue;
 
       for (const move of piece.possibleMoves) {
@@ -156,6 +155,9 @@ export class Board {
         }
         return p;
       });
+
+      playedPiece.hasMoved = true
+      destinationPiece.hasMoved = true
 
       this.calculateAllMoves();
       return true;

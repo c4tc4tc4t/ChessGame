@@ -56,7 +56,7 @@ export default function Referee() {
 
     if (destination.y === promotionRow && playedPiece.isPawn) {
       modalRef.current?.classList.remove("hidden");
-      setPromotionPawn((previousPromotionPawn) => {
+      setPromotionPawn(() => {
         const clonedPlayedPiece = playedPiece.clone();
         clonedPlayedPiece.position = destination.clone();
 
