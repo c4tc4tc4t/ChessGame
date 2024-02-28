@@ -26,10 +26,12 @@ export class Board {
   }
 
   calculateAllMoves() {
+    //get possible moves of pieces
     for (const piece of this.pieces) {
       piece.possibleMoves = this.getValidMoves(piece, this.pieces);
     }
 
+    //add castling moves to king
     for (const king of this.pieces.filter((p) => p.isKing)) {
       if (king.possibleMoves === undefined) continue;
       king.possibleMoves = [
@@ -38,8 +40,10 @@ export class Board {
       ];
     }
 
+    //looks for checks and dangerous moves and filters to current team moves
     this.checkCurrentTeamMoves();
 
+    //reset the possiblemoves of the enemy team's turn
     for (const piece of this.pieces.filter(
       (p) => p.team !== this.currentTeam
     )) {
@@ -48,35 +52,44 @@ export class Board {
   }
 
   checkCurrentTeamMoves() {
+    //filters pieces by team
     for (const piece of this.pieces.filter(
       (p) => p.team === this.currentTeam
     )) {
+      //if piece dont have possible moves, no need for verification
       if (piece.possibleMoves === undefined) continue;
 
+      //loops through each move of each piece
       for (const move of piece.possibleMoves) {
+        //clones the board to keep original state
         const simulatedBoard = this.clone();
 
         simulatedBoard.pieces = simulatedBoard.pieces.filter(
           (p) => !p.samePosition(move)
         );
 
+        //finds the piece on the clonedboard and updates position to move target
         simulatedBoard.pieces.find((p) =>
           p.samePiecePosition(piece)
         )!.position = move.clone()
 
+        //finds the king on the clonedboard
         const clonedKing = simulatedBoard.pieces.find(
           (p) => p.isKing && p.team === simulatedBoard.currentTeam
         )!;
 
 
+        //loops through pieces of enemy team
         for (const enemy of simulatedBoard.pieces.filter(
           (p) => p.team !== simulatedBoard.currentTeam
         )) {
+          //get enemys possible moves to calculate danger and checks
           enemy.possibleMoves = simulatedBoard.getValidMoves(
             enemy,
             simulatedBoard.pieces
           );
 
+          //pawns cannot capture as they move, so remove those moves that can capture the king
           if (enemy.isPawn) {
             if (
               enemy.possibleMoves.some(
@@ -91,6 +104,7 @@ export class Board {
             }
           } else {
 
+            //if king is in check by any move, removes all moves from all pieces that cannot block the attack or capture the piece
             if (
               enemy.possibleMoves.some((m) =>
                 m.samePosition(clonedKing?.position)
@@ -108,6 +122,7 @@ export class Board {
     }
   }
 
+  //gets the possible moves of the piece
   getValidMoves(piece: Piece, boardState: Piece[]): Position[] {
     switch (piece.type) {
       case PieceType.PAWN:
@@ -138,15 +153,18 @@ export class Board {
       p.samePosition(destination)
     );
 
+    //checks if the played move is a valid castling move
     if (
       playedPiece.isKing &&
       destinationPiece?.isRook &&
       destinationPiece.team === playedPiece.team
     ) {
+      //calculates the direction of the castling
       const direction =
         destinationPiece.position.x - playedPiece.position.x > 0 ? 1 : -1;
       const newKingXPosition = playedPiece.position.x + direction * 2;
 
+      //executes the castling between king and rook
       this.pieces = this.pieces.map((p) => {
         if (p.samePiecePosition(playedPiece)) {
           p.position.x = newKingXPosition;
@@ -156,6 +174,7 @@ export class Board {
         return p;
       });
 
+      //change hasMoved to true property so king and rook cannot execute castling again
       playedPiece.hasMoved = true
       destinationPiece.hasMoved = true
 
@@ -163,10 +182,14 @@ export class Board {
       return true;
     }
 
+    //checks if the played move is a valid enPassant move
     if (enPassantMove) {
+      //reduces to remove the captured piece
       this.pieces = this.pieces.reduce((results, piece) => {
+        //finds the played piece
         if (piece.samePiecePosition(playedPiece)) {
           if (piece.isPawn) (piece as Pawn).enPassant = false;
+          //piece moves to destination after captures of the pawn
           piece.position.x = destination.x;
           piece.position.y = destination.y;
           piece.hasMoved = true;
@@ -176,6 +199,7 @@ export class Board {
             new Position(destination.x, destination.y - pawnDirection)
           )
         ) {
+          //removes the enPassant of a piece after uses the special 2 tiles move
           if (piece.isPawn) {
             (piece as Pawn).enPassant = false;
           }
@@ -188,11 +212,13 @@ export class Board {
       this.calculateAllMoves();
     } else if (validMove) {
       this.pieces = this.pieces.reduce((results, piece) => {
+        //finds the played piece
         if (piece.samePiecePosition(playedPiece)) {
           if (piece.isPawn)
             (piece as Pawn).enPassant =
               Math.abs(playedPiece.position.y - destination.y) === 2 &&
               piece.type === PieceType.PAWN;
+          //pushes the piece with position played
           piece.position.x = destination.x;
           piece.position.y = destination.y;
           piece.hasMoved = true;

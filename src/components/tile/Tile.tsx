@@ -2,11 +2,12 @@ import "./Tile.css";
 
 interface Props {
   image?: string;
+  id?: string;
   number: number;
   highlight: boolean;
 }
 
-export default function Tile({ number, image, highlight }: Props) {
+export default function Tile({ number, image, highlight, id }: Props) {
   const className: string = [
     "tile",
     number % 2 === 0 && "black-tile",
@@ -21,6 +22,7 @@ export default function Tile({ number, image, highlight }: Props) {
     <div className={className}>
       {image && (
         <div
+          data-testid={id}
           style={{ backgroundImage: `url(${image})` }}
           className="chess-piece"
         ></div>

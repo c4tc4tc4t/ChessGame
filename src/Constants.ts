@@ -8,6 +8,12 @@ export const VERTICAL_AXIS = ["1", "2", "3", "4", "5", "6", "7", "8"];
 export const HORIZONTAL_AXIS = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
 export const GRID_SIZE = 100;
+export const PIECE_CENTER_OFFSET = GRID_SIZE / 2
+export const BOARD_HEIGHT = 800;
+export const EDGE_OFFSET = 25;
+export const CURSOR_OFFSET = 50;
+export const MAX_X_OFFSET = 75;
+export const MAX_Y_OFFSET = 79;
 
 export const initialBoard: Board = new Board(
   [

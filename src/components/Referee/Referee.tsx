@@ -16,8 +16,13 @@ export default function Referee() {
     board.calculateAllMoves();
   }, []);
 
-  function playMove(playedPiece: Piece, destination: Position): boolean {
+  function playMoveValidation(
+    playedPiece: Piece,
+    destination: Position
+  ): boolean {
+    //checks if the piece have possible moves, if not, it means that all moves are invalid
     if (playedPiece.possibleMoves === undefined) return false;
+    //check if it is white's turn or black's turn, so only pieces of the team's turn can move
     if (playedPiece.team === TeamType.WHITE && board.totalTurns % 2 !== 1)
       return false;
     if (playedPiece.team === TeamType.BLACK && board.totalTurns % 2 !== 0)
@@ -25,12 +30,15 @@ export default function Referee() {
 
     let playedMoveIsValid = false;
 
+    //check if the move played is into the possibleMoves array
     const validMove = playedPiece.possibleMoves?.some((m) =>
       m.samePosition(destination)
     );
 
+    //if validmove is false return false, because the move played was not a possible move
     if (!validMove) return false;
 
+    //check if the move played is a enPassant move
     const enPassantMove: boolean = isEnPassantMove(
       playedPiece.position,
       destination,
@@ -39,9 +47,12 @@ export default function Referee() {
     );
 
     setBoard(() => {
+      //clone the board
       const clonedBoard = board.clone();
+      //updates the turn
       clonedBoard.totalTurns += 1;
 
+      //updates the pieces of the board after a valid move is played
       playedMoveIsValid = clonedBoard.playMove(
         enPassantMove,
         validMove,
@@ -49,13 +60,18 @@ export default function Referee() {
         destination
       );
 
+      //set the updated board
       return clonedBoard;
     });
 
+    //check the promotion row of the piece
     let promotionRow = playedPiece.team === TeamType.WHITE ? 7 : 0;
 
+    //check if the piece is a pawn and if the move played is a promotion
     if (destination.y === promotionRow && playedPiece.isPawn) {
+      //shows the modal promotion to choose a piece
       modalRef.current?.classList.remove("hidden");
+      //updates the promotionPawn with the pawn played for further verifications
       setPromotionPawn(() => {
         const clonedPlayedPiece = playedPiece.clone();
         clonedPlayedPiece.position = destination.clone();
@@ -73,14 +89,18 @@ export default function Referee() {
     type: PieceType,
     team: TeamType
   ) {
+    //attributes the direction of the pawn based on his team
     const pawnDirection = team === TeamType.WHITE ? 1 : -1;
 
+    //check if is pawn
     if (type === PieceType.PAWN) {
+      //check if the move is enpassant, if wants to move 1 tile on x and 1 tile on y
       if (
         (desiredPosition.x - initialPosition.x === -1 ||
           desiredPosition.x - initialPosition.x === 1) &&
         desiredPosition.y - initialPosition.y === pawnDirection
       ) {
+        //finds if the piece with the enPassant move exist on the board and then returns
         const piece = board.pieces.find(
           (p) =>
             p.position.x === desiredPosition.x &&
@@ -96,15 +116,18 @@ export default function Referee() {
   }
 
   function promotePawn(pieceType: PieceType) {
+    //if there's not a pawn being promoted, return
     if (promotionPawn === undefined) {
       return;
     }
 
     setBoard(() => {
+      //clone the board to keep the original state
       const clonedBoard = board.clone();
       clonedBoard.pieces = clonedBoard.pieces.reduce((results, piece) => {
+        //finds the pawn the board
         if (piece.samePiecePosition(promotionPawn)) {
-          console.log(piece);
+          //push the selected piece(queen, rook, etc..) ti replace the pawn
           results.push(
             new Piece(piece.position.clone(), pieceType, piece.team, true)
           );
@@ -115,14 +138,17 @@ export default function Referee() {
         return results;
       }, [] as Piece[]);
 
+      //re-calculate moves so new piece have possible moves
       clonedBoard.calculateAllMoves();
 
       return clonedBoard;
     });
 
+    //hides the promotion modal
     modalRef.current?.classList.add("hidden");
   }
 
+  //returns the pawn team to the promoted piece
   function promotionTeamType() {
     return promotionPawn?.team === TeamType.WHITE ? "w" : "b";
   }
@@ -150,7 +176,10 @@ export default function Referee() {
           />
         </div>
       </div>
-      <Chessboard playMove={playMove} pieces={board.pieces} />
+      <Chessboard
+        playMoveValidation={playMoveValidation}
+        pieces={board.pieces}
+      />
     </>
   );
 }

@@ -37,11 +37,11 @@ export const GetPossiblePawnMoves = (
     pawn.position.y
   );
 
-  // Verificar se o movimento normal está dentro dos limites do tabuleiro
+
   if (normalMove.y >= 0 && normalMove.y <= 7 && !tileIsOccupied(normalMove, boardState)) {
     possibleMoves.push(normalMove);
 
-    // Verificar se o movimento especial está dentro dos limites do tabuleiro
+
     if (
       pawn.position.y === specialRow &&
       specialMove.y >= 0 && specialMove.y <= 7 &&
@@ -51,7 +51,6 @@ export const GetPossiblePawnMoves = (
     }
   }
 
-  // Verificar se os movimentos de ataque estão dentro dos limites do tabuleiro
   if (upperLeftAttack.x >= 0 && upperLeftAttack.y >= 0 && upperLeftAttack.y <= 7) {
     if (tileIsOccupiedByOpponent(upperLeftAttack, boardState, pawn.team)) {
       possibleMoves.push(upperLeftAttack);
