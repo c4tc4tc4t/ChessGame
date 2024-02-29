@@ -15,6 +15,7 @@ import { Position } from "./Position";
 export class Board {
   pieces: Piece[];
   totalTurns: number;
+  winningTeam?: TeamType
 
   constructor(pieces: Piece[], totalTurns: number) {
     this.pieces = pieces;
@@ -49,6 +50,11 @@ export class Board {
     )) {
       piece.possibleMoves = [];
     }
+
+    //checkmate logic
+    if (this.pieces.filter(p => p.team === this.currentTeam).some(p => p.possibleMoves !== undefined && p.possibleMoves.length > 0)) return
+
+    this.winningTeam = (this.currentTeam === TeamType.WHITE) ? TeamType.BLACK : TeamType.WHITE
   }
 
   checkCurrentTeamMoves() {

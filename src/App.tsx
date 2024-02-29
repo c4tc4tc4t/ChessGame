@@ -1,11 +1,14 @@
 import "./App.css";
 import Referee from "./components/Referee/Referee";
+import { PrimeReactProvider } from "primereact/api";
 
 function App() {
   return (
-    <div id="app">
-      <Referee />
-    </div>
+    <PrimeReactProvider>
+      <div id="app">
+        <Referee />
+      </div>
+    </PrimeReactProvider>
   );
 }
 

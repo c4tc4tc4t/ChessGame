@@ -1,20 +1,34 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import Chessboard from "../chessboard/Chessboard";
 import { Piece, Position } from "../../models";
 import { PieceType, TeamType } from "../../Types";
 import { Pawn } from "../../models/Pawn";
 import { Board } from "../../models/Board";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import "./Referee.css";
 
 export default function Referee() {
-  const [board, setBoard] = useState<Board>(initialBoard);
+  const [board, setBoard] = useState<Board>(initialBoard.clone());
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
+  const [gameOverModalVisible, setgameOverModalVisible] =
+    useState<boolean>(false);
 
   const modalRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    board.calculateAllMoves();
-  }, []);
+  const checkMateModalRef = useRef<HTMLDivElement>(null);
+
+  interface CustomHeaderProps {
+    title: string;
+  }
+
+  //CustomHeader created to style the header of dialog PrimeReact
+  const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => (
+    <div style={{ textAlign: "center", width: "100%" }}>
+      <h3 style={{ margin: 0 }}>{title}</h3>
+    </div>
+  );
 
   function playMoveValidation(
     playedPiece: Piece,
@@ -59,6 +73,10 @@ export default function Referee() {
         playedPiece,
         destination
       );
+
+      if (clonedBoard.winningTeam !== undefined) {
+        setgameOverModalVisible(true);
+      }
 
       //set the updated board
       return clonedBoard;
@@ -153,6 +171,11 @@ export default function Referee() {
     return promotionPawn?.team === TeamType.WHITE ? "w" : "b";
   }
 
+  function restartGame() {
+    setgameOverModalVisible(false);
+    setBoard(initialBoard.clone());
+  }
+
   return (
     <>
       <div style={{ color: "white" }}>{board.totalTurns}</div>
@@ -175,6 +198,24 @@ export default function Referee() {
             src={`/assets/images/queen_${promotionTeamType()}.png`}
           />
         </div>
+      </div>
+      <div ref={checkMateModalRef}>
+        <Dialog
+          header={
+            <CustomHeader
+              title={`${
+                board.winningTeam === TeamType.BLACK ? "Black" : "White"
+              } Won!!!`}
+            />
+          }
+          visible={gameOverModalVisible}
+          style={{ width: "50vw" }}
+          onHide={() => setgameOverModalVisible(false)}
+        >
+          <div className="flex justify-content-center">
+            <Button onClick={() => restartGame()}>Play Again</Button>
+          </div>
+        </Dialog>
       </div>
       <Chessboard
         playMoveValidation={playMoveValidation}

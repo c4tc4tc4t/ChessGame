@@ -1,14 +1,13 @@
-#chessboard{
-width: 801px;
-height: 801px;
+#chessboard {
+  width: 801px;
+  height: 801px;
 
-display: grid;
-grid-template-columns: repeat(8, 100px);
-grid-template-rows: repeat(8, 100px);
-
+  display: grid;
+  grid-template-columns: repeat(8, 100px);
+  grid-template-rows: repeat(8, 100px);
 }
 
-.hidden{
+.hidden {
   display: none;
 }
 
@@ -18,27 +17,26 @@ grid-template-rows: repeat(8, 100px);
   bottom: 0px;
   left: 0px;
   right: 0px;
-
 }
 
-#pawn-promotion-modal > .modal-body{
+#pawn-promotion-modal > .modal-body {
   position: absolute;
-    top: calc(50% - 150px);
-    left: calc(50% - 400px);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    height: 300px;
-    width: 800px;
-    background-color: rgba(127, 127, 127, 0.8);
+  top: calc(50% - 150px);
+  left: calc(50% - 400px);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 300px;
+  width: 800px;
+  background-color: rgba(127, 127, 127, 0.8);
 }
 
-#pawn-promotion-modal > .modal-body > img{
+#pawn-promotion-modal > .modal-body > img {
   height: 120px;
   padding: 20px;
   border-radius: 50%;
 }
-#pawn-promotion-modal > .modal-body > img:hover{
+#pawn-promotion-modal > .modal-body > img:hover {
   background-color: rgba(255, 255, 255, 0.3);
   cursor: pointer;
 }
