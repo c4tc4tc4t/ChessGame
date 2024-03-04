@@ -1,13 +1,18 @@
+
 import "./App.css";
 import Referee from "./components/Referee/Referee";
 import { PrimeReactProvider } from "primereact/api";
+import { GameProvider } from "./customHooks/useGame";
+
 
 function App() {
   return (
     <PrimeReactProvider>
-      <div id="app">
-        <Referee />
-      </div>
+      <GameProvider>
+        <div id="app">
+          <Referee />
+        </div>
+      </GameProvider>
     </PrimeReactProvider>
   );
 }

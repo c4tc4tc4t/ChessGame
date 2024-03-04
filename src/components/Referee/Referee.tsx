@@ -1,16 +1,18 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import Chessboard from "../chessboard/Chessboard";
 import { Piece, Position } from "../../models";
-import { PieceType, TeamType } from "../../Types";
+import { PieceType, TeamType, WinningTeamType } from "../../Types";
 import { Pawn } from "../../models/Pawn";
 import { Board } from "../../models/Board";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import "./Referee.css";
+import { useGame } from "../../customHooks/useGame";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
+  const [boardStateHistoric, setboardStateHistoric] = useState<Piece[][]>([]);
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const [gameOverModalVisible, setgameOverModalVisible] =
     useState<boolean>(false);
@@ -18,6 +20,21 @@ export default function Referee() {
   const modalRef = useRef<HTMLDivElement>(null);
 
   const checkMateModalRef = useRef<HTMLDivElement>(null);
+
+  const [fiftyMovesDrawRuleCount, setFiftyMovesDrawRuleCount] = useState<number>(0)
+
+
+  const { pieceCaptured,setPieceCaptured } = useGame();
+
+  useEffect(() => {
+  if(fiftyMovesDrawRuleCount >= 100){
+    board.winningTeam = WinningTeamType.DRAW
+    setgameOverModalVisible(true)
+    setFiftyMovesDrawRuleCount(0)
+  }
+}, [fiftyMovesDrawRuleCount]);
+
+
 
   interface CustomHeaderProps {
     title: string;
@@ -29,6 +46,27 @@ export default function Referee() {
       <h3 style={{ margin: 0 }}>{title}</h3>
     </div>
   );
+
+
+  function threefoldRepetitionDraw(): boolean{
+    let positionRepeatedCount = 0
+    boardStateHistoric.forEach((boardState)=>{
+      const allPiecesMatch = boardState.every(piece1 => {
+        return board.pieces.some(piece2 => {
+          return piece1.type === piece2.type &&
+             piece1.team === piece2.team &&
+             piece1.position.samePosition(piece2.position);
+        });
+      })
+      if(allPiecesMatch) positionRepeatedCount++
+    })
+
+    if(positionRepeatedCount >= 3) {
+      return true
+    }else{
+      return false
+    }
+  }
 
   function playMoveValidation(
     playedPiece: Piece,
@@ -71,7 +109,8 @@ export default function Referee() {
         enPassantMove,
         validMove,
         playedPiece,
-        destination
+        destination,
+        setPieceCaptured
       );
 
       if (clonedBoard.winningTeam !== undefined) {
@@ -97,6 +136,20 @@ export default function Referee() {
         return clonedPlayedPiece;
       });
     }
+
+    if(playedPiece.isPawn || pieceCaptured){
+      setFiftyMovesDrawRuleCount(0)
+    }else{
+      setFiftyMovesDrawRuleCount(prevCount => prevCount + 1);
+    }
+
+    setPieceCaptured(false)
+
+    //se for true quer dizer que é empate por repetição, fazer mostra empate na tela if true
+    console.log(threefoldRepetitionDraw())
+
+setboardStateHistoric([...boardStateHistoric, board.pieces]);
+
 
     return playedMoveIsValid;
   }
@@ -203,10 +256,12 @@ export default function Referee() {
         <Dialog
           header={
             <CustomHeader
-              title={`${
-                board.winningTeam === TeamType.BLACK ? "Black" : "White"
-              } Won!!!`}
-            />
+      title={
+        board.winningTeam === WinningTeamType.DRAW
+          ? "DRAW"
+          : `${board.winningTeam === WinningTeamType.BLACK ? "Black" : "White"} Won!!!`
+      }
+    />
           }
           visible={gameOverModalVisible}
           style={{ width: "50vw" }}

@@ -316,8 +316,10 @@ describe('Board Class Tests', () => {
       let bishopWhite: Piece
       let knightWhite: Piece
       let queenWhite: Piece
+      let setPieceCaptured: jest.Mock
 
       beforeEach(() => {
+        setPieceCaptured = jest.fn()
         pawnWhite = new Pawn(new Position(1, 4), TeamType.WHITE, true)
         pawnBlack = new Pawn(new Position(0, 4), TeamType.BLACK, true)
         bishopWhite = new Piece(new Position(2, 1), PieceType.BISHOP, TeamType.WHITE, false)
@@ -337,7 +339,7 @@ describe('Board Class Tests', () => {
 
       it('Should test if the move played is updated correctly', () => {
 
-        const bishopMove = originalBoard.playMove(false, true, bishopWhite, new Position(0, 3))
+        const bishopMove = originalBoard.playMove(false, true, bishopWhite, new Position(0, 3), setPieceCaptured)
 
         expect(bishopWhite.position).toEqual(new Position(0, 3));
         expect(bishopMove).toBeTruthy();
@@ -347,7 +349,7 @@ describe('Board Class Tests', () => {
 
       it('Should test if the invalid move played is not updated', () => {
 
-        const bishopMove = originalBoard.playMove(false, false, bishopWhite, new Position(2, 2))
+        const bishopMove = originalBoard.playMove(false, false, bishopWhite, new Position(2, 2), setPieceCaptured)
 
         expect(bishopWhite.position).not.toEqual(new Position(2, 2));
         expect(bishopMove).not.toBeTruthy();
@@ -357,7 +359,7 @@ describe('Board Class Tests', () => {
 
       it('Should test if the en passant move played is updated correctly', () => {
 
-        const enPassantMove = originalBoard.playMove(true, true, pawnWhite, new Position(0, 5))
+        const enPassantMove = originalBoard.playMove(true, true, pawnWhite, new Position(0, 5), setPieceCaptured)
 
         expect(pawnWhite.position).toEqual(new Position(0, 5));
         expect(enPassantMove).toBeTruthy();
@@ -372,8 +374,10 @@ describe('Board Class Tests', () => {
       let pieces: Piece[] = []
       let rookWhite: Piece
       let kingWhite: Piece
+      let setPieceCaptured: jest.Mock
 
       beforeEach(() => {
+        setPieceCaptured = jest.fn()
         rookWhite = new Piece(new Position(7, 0), PieceType.ROOK, TeamType.WHITE, false)
         kingWhite = new Piece(new Position(4, 0), PieceType.KING, TeamType.WHITE, false)
 
@@ -389,7 +393,7 @@ describe('Board Class Tests', () => {
 
       it('Should test if the castling move played is updated correctly', () => {
 
-        const castlingMove = originalBoard.playMove(false, true, kingWhite, new Position(7, 0))
+        const castlingMove = originalBoard.playMove(false, true, kingWhite, new Position(7, 0), setPieceCaptured)
 
         expect(kingWhite.position).toEqual(new Position(6, 0));
         expect(castlingMove).toBeTruthy();

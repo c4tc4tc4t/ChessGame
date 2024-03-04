@@ -11,3 +11,10 @@ export enum TeamType {
   BLACK = "b",
   WHITE = "w",
 }
+
+export enum WinningTeamType {
+  BLACK = "b",
+  WHITE = "w",
+  DRAW = "d"
+}
+

@@ -1,4 +1,4 @@
-import { PieceType, TeamType } from "../Types";
+import { PieceType, TeamType, WinningTeamType } from "../Types";
 import {
   GetPossibleBishopMoves,
   GetPossibleKingMoves,
@@ -15,7 +15,8 @@ import { Position } from "./Position";
 export class Board {
   pieces: Piece[];
   totalTurns: number;
-  winningTeam?: TeamType
+  winningTeam?: WinningTeamType
+  kingIsInCheck?: boolean = false
 
   constructor(pieces: Piece[], totalTurns: number) {
     this.pieces = pieces;
@@ -54,7 +55,13 @@ export class Board {
     //checkmate logic
     if (this.pieces.filter(p => p.team === this.currentTeam).some(p => p.possibleMoves !== undefined && p.possibleMoves.length > 0)) return
 
-    this.winningTeam = (this.currentTeam === TeamType.WHITE) ? TeamType.BLACK : TeamType.WHITE
+    //winner check logic, if the game is over and king is not attacked, it's a draw
+    if (!this.kingIsInCheck) {
+      this.winningTeam = WinningTeamType.DRAW
+    } else {
+      this.winningTeam = (this.currentTeam === TeamType.WHITE) ? WinningTeamType.BLACK : WinningTeamType.WHITE
+    }
+
   }
 
   checkCurrentTeamMoves() {
@@ -116,11 +123,14 @@ export class Board {
                 m.samePosition(clonedKing?.position)
               )
             ) {
-
+              //king is in check update for draw logic
+              this.kingIsInCheck = true
               piece.possibleMoves = piece.possibleMoves?.filter(
                 (m) => !m.samePosition(move)
               );
 
+            } else {
+              this.kingIsInCheck = false
             }
           }
         }
@@ -152,7 +162,8 @@ export class Board {
     enPassantMove: boolean,
     validMove: boolean,
     playedPiece: Piece,
-    destination: Position
+    destination: Position,
+    setPieceCaptured: (captured: boolean) => void
   ): boolean {
     const pawnDirection = playedPiece.team === TeamType.WHITE ? 1 : -1;
     const destinationPiece = this.pieces.find((p) =>
@@ -220,6 +231,11 @@ export class Board {
       this.pieces = this.pieces.reduce((results, piece) => {
         //finds the played piece
         if (piece.samePiecePosition(playedPiece)) {
+          //checks if a piece is captured for draw logic
+          if (this.pieces.some(p => p.samePosition(destination) && p.team !== playedPiece.team)) {
+            setPieceCaptured(true)
+          }
+
           if (piece.isPawn)
             (piece as Pawn).enPassant =
               Math.abs(playedPiece.position.y - destination.y) === 2 &&
@@ -229,6 +245,7 @@ export class Board {
           piece.position.y = destination.y;
           piece.hasMoved = true;
           results.push(piece);
+          //else if executes the captures logic, because if there's a piece on destination, that piece will not be pushed into results
         } else if (!piece.samePosition(destination)) {
           if (piece.isPawn) {
             (piece as Pawn).enPassant = false;
