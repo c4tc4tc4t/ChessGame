@@ -7,6 +7,7 @@ interface Props {
   highlight: boolean;
 }
 
+
 export default function Tile({ number, image, highlight, id }: Props) {
   const className: string = [
     "tile",

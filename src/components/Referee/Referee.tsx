@@ -24,15 +24,16 @@ export default function Referee() {
   const [fiftyMovesDrawRuleCount, setFiftyMovesDrawRuleCount] = useState<number>(0)
 
 
-  const { pieceCaptured,setPieceCaptured } = useGame();
+  const { pieceCaptured, setPieceCaptured } = useGame();
 
   useEffect(() => {
-  if(fiftyMovesDrawRuleCount >= 100){
-    board.winningTeam = WinningTeamType.DRAW
-    setgameOverModalVisible(true)
-    setFiftyMovesDrawRuleCount(0)
-  }
-}, [fiftyMovesDrawRuleCount]);
+    //if 100 moves are played, 50 by each team, it's a draw
+    if (fiftyMovesDrawRuleCount >= 100) {
+      board.winningTeam = WinningTeamType.DRAW
+      setgameOverModalVisible(true)
+      setFiftyMovesDrawRuleCount(0)
+    }
+  }, [fiftyMovesDrawRuleCount]);
 
 
 
@@ -48,22 +49,27 @@ export default function Referee() {
   );
 
 
-  function threefoldRepetitionDraw(): boolean{
+  //function that checks if the move played is a three fold repetition draw
+  function threefoldRepetitionDraw(): boolean {
     let positionRepeatedCount = 0
-    boardStateHistoric.forEach((boardState)=>{
+    //boardstatehistoric is an array that contains Piece[], meaning an array that contain each board State played saved
+    boardStateHistoric.forEach((boardState) => {
+      //compare the type, team and position of every state played with the current state
       const allPiecesMatch = boardState.every(piece1 => {
         return board.pieces.some(piece2 => {
           return piece1.type === piece2.type &&
-             piece1.team === piece2.team &&
-             piece1.position.samePosition(piece2.position);
+            piece1.team === piece2.team &&
+            piece1.position.samePosition(piece2.position);
         });
       })
-      if(allPiecesMatch) positionRepeatedCount++
+      //checks if the current state is repeated
+      if (allPiecesMatch) positionRepeatedCount++
     })
 
-    if(positionRepeatedCount >= 3) {
+    //if current board state is repeated 2 times, that means the it appeared 3 times, the current plus 2, so it's a draw by repetition
+    if (positionRepeatedCount >= 2) {
       return true
-    }else{
+    } else {
       return false
     }
   }
@@ -137,19 +143,25 @@ export default function Referee() {
       });
     }
 
-    if(playedPiece.isPawn || pieceCaptured){
+    //if a pawn is moves or a piece is captured the fifty move rule is reseted, otherwise it keeps counting
+    if (playedPiece.isPawn || pieceCaptured) {
       setFiftyMovesDrawRuleCount(0)
-    }else{
+    } else {
       setFiftyMovesDrawRuleCount(prevCount => prevCount + 1);
     }
 
     setPieceCaptured(false)
 
-    //se for true quer dizer que é empate por repetição, fazer mostra empate na tela if true
-    console.log(threefoldRepetitionDraw())
 
-setboardStateHistoric([...boardStateHistoric, board.pieces]);
+    const isDrawByrepetition: boolean = threefoldRepetitionDraw()
+    //if is a draw by repetition shows the modal with draw
+    if (isDrawByrepetition) {
+      board.winningTeam = WinningTeamType.DRAW
+      setgameOverModalVisible(true)
+    }
 
+
+    setboardStateHistoric([...boardStateHistoric, board.pieces]);
 
     return playedMoveIsValid;
   }
@@ -234,19 +246,19 @@ setboardStateHistoric([...boardStateHistoric, board.pieces]);
       <div style={{ color: "white" }}>{board.totalTurns}</div>
       <div id="pawn-promotion-modal" className="hidden" ref={modalRef}>
         <div className="modal-body">
-          <img
+          <img alt="promoteRook"
             onClick={() => promotePawn(PieceType.ROOK)}
             src={`/assets/images/rook_${promotionTeamType()}.png`}
           />
-          <img
+          <img alt="promoteBishop"
             onClick={() => promotePawn(PieceType.BISHOP)}
             src={`/assets/images/bishop_${promotionTeamType()}.png`}
           />
-          <img
+          <img alt="promoteKnight"
             onClick={() => promotePawn(PieceType.KNIGHT)}
             src={`/assets/images/knight_${promotionTeamType()}.png`}
           />
-          <img
+          <img alt="promoteQueen"
             onClick={() => promotePawn(PieceType.QUEEN)}
             src={`/assets/images/queen_${promotionTeamType()}.png`}
           />
@@ -256,12 +268,12 @@ setboardStateHistoric([...boardStateHistoric, board.pieces]);
         <Dialog
           header={
             <CustomHeader
-      title={
-        board.winningTeam === WinningTeamType.DRAW
-          ? "DRAW"
-          : `${board.winningTeam === WinningTeamType.BLACK ? "Black" : "White"} Won!!!`
-      }
-    />
+              title={
+                board.winningTeam === WinningTeamType.DRAW
+                  ? "DRAW"
+                  : `${board.winningTeam === WinningTeamType.BLACK ? "Black" : "White"} Won!!!`
+              }
+            />
           }
           visible={gameOverModalVisible}
           style={{ width: "50vw" }}

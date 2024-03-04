@@ -136,8 +136,8 @@ export default function Chessboard({ playMoveValidation, pieces }: Props) {
           : undefined;
       let highlight = currentPiece?.possibleMoves
         ? currentPiece.possibleMoves.some((p) =>
-            p.samePosition(new Position(i, j))
-          )
+          p.samePosition(new Position(i, j))
+        )
         : false;
 
       board.push(
