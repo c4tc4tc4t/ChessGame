@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import Chessboard from "../chessboard/Chessboard";
 import { Piece, Position } from "../../models";
@@ -12,9 +12,9 @@ import { useGame } from "../../customHooks/useGame";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
-  const [boardStateHistoric, setboardStateHistoric] = useState<Piece[][]>([]);
+  const [boardStateHistoric, setBoardStateHistoric] = useState<Piece[][]>([]);
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
-  const [gameOverModalVisible, setgameOverModalVisible] =
+  const [gameOverModalVisible, setGameOverModalVisible] =
     useState<boolean>(false);
 
   const modalRef = useRef<HTMLDivElement>(null);
@@ -26,14 +26,47 @@ export default function Referee() {
 
   const { pieceCaptured, setPieceCaptured } = useGame();
 
+  const setFiftyMovesDrawCallback = useCallback(() => {
+    setBoard((prevBoard) => {
+
+      const newBoard = new Board([...prevBoard.pieces], prevBoard.totalTurns);
+      newBoard.winningTeam = WinningTeamType.DRAW;
+
+      return newBoard;
+    });
+    setGameOverModalVisible(true);
+    setFiftyMovesDrawRuleCount(0);
+  }, []);
+
+  useEffect(() => {
+    if (fiftyMovesDrawRuleCount >= 100) {
+      setFiftyMovesDrawCallback();
+    }
+  }, [fiftyMovesDrawRuleCount, setFiftyMovesDrawCallback]);
+
+
   useEffect(() => {
     //if 100 moves are played, 50 by each team, it's a draw
     if (fiftyMovesDrawRuleCount >= 100) {
       board.winningTeam = WinningTeamType.DRAW
-      setgameOverModalVisible(true)
+      setGameOverModalVisible(true)
       setFiftyMovesDrawRuleCount(0)
     }
   }, [fiftyMovesDrawRuleCount]);
+
+  useEffect(() => {
+    const isDrawByrepetition: boolean = threefoldRepetitionDraw(board)
+
+    const isinsufficientMaterialDraw = insufficientMaterialDraw(board);
+
+    //if is a draw by repetition or draw by insufficient material shows the modal with draw
+    if (isDrawByrepetition || isinsufficientMaterialDraw) {
+      board.winningTeam = WinningTeamType.DRAW
+      setGameOverModalVisible(true)
+    }
+    console.log(board.totalTurns)
+    if (board.totalTurns !== 1) setBoardStateHistoric([...boardStateHistoric, board.pieces]);
+  }, [board])
 
 
 
@@ -50,7 +83,7 @@ export default function Referee() {
 
 
   //function that checks if the move played is a three fold repetition draw
-  function threefoldRepetitionDraw(): boolean {
+  function threefoldRepetitionDraw(board: Board): boolean {
     let positionRepeatedCount = 0
     //boardstatehistoric is an array that contains Piece[], meaning an array that contain each board State played saved
     boardStateHistoric.forEach((boardState) => {
@@ -66,12 +99,33 @@ export default function Referee() {
       if (allPiecesMatch) positionRepeatedCount++
     })
 
-    //if current board state is repeated 2 times, that means the it appeared 3 times, the current plus 2, so it's a draw by repetition
+    //if current board state is repeated 2 times, means that the position appeared 3 times, current +2 , so, it's a draw by repetition
     if (positionRepeatedCount >= 2) {
       return true
     } else {
       return false
     }
+  }
+
+  //function that checks if it is a draw by insuficcient material
+  function insufficientMaterialDraw(board: Board): boolean {
+    //gets the quantity of pieces on the board
+    const pieceQuantity: number = board.pieces.length
+    let containBishopOrKnight: boolean = false;
+
+    //checks if there's a remaining knight or bishop on the board
+    board.pieces.forEach((piece) => {
+      if (piece.isBishop || piece.isKnight) containBishopOrKnight = true
+    })
+    //if there's only 2 pieces left, that means that only kings are left, so it's a draw
+    console.log(pieceQuantity)
+    if (pieceQuantity <= 2) {
+      return true
+      //if there's 3 pieces left and 1 of then it's a knight or a bishop, it's a draw
+    } else if (pieceQuantity <= 3 && containBishopOrKnight) {
+      return true
+    }
+    return false
   }
 
   function playMoveValidation(
@@ -120,7 +174,7 @@ export default function Referee() {
       );
 
       if (clonedBoard.winningTeam !== undefined) {
-        setgameOverModalVisible(true);
+        setGameOverModalVisible(true);
       }
 
       //set the updated board
@@ -151,17 +205,6 @@ export default function Referee() {
     }
 
     setPieceCaptured(false)
-
-
-    const isDrawByrepetition: boolean = threefoldRepetitionDraw()
-    //if is a draw by repetition shows the modal with draw
-    if (isDrawByrepetition) {
-      board.winningTeam = WinningTeamType.DRAW
-      setgameOverModalVisible(true)
-    }
-
-
-    setboardStateHistoric([...boardStateHistoric, board.pieces]);
 
     return playedMoveIsValid;
   }
@@ -237,7 +280,7 @@ export default function Referee() {
   }
 
   function restartGame() {
-    setgameOverModalVisible(false);
+    setGameOverModalVisible(false);
     setBoard(initialBoard.clone());
   }
 
@@ -277,7 +320,7 @@ export default function Referee() {
           }
           visible={gameOverModalVisible}
           style={{ width: "50vw" }}
-          onHide={() => setgameOverModalVisible(false)}
+          onHide={() => setGameOverModalVisible(false)}
         >
           <div className="flex justify-content-center">
             <Button onClick={() => restartGame()}>Play Again</Button>
