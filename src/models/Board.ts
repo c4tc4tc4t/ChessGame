@@ -27,6 +27,7 @@ export class Board {
     return this.totalTurns % 2 === 0 ? TeamType.BLACK : TeamType.WHITE;
   }
 
+
   calculateAllMoves() {
     //get possible moves of pieces
     for (const piece of this.pieces) {

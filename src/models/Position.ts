@@ -10,6 +10,13 @@ export class Position {
     return this.x === otherPosition.x && this.y === otherPosition.y
   }
 
+  positionConvert(): string {
+    const xLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const yAxis = this.y + 1;
+    const xAxis = xLetters[this.x];
+    return `${xAxis}${yAxis}`;
+  }
+
   clone(): Position {
     return new Position(this.x, this.y)
   }

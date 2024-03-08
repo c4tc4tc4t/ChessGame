@@ -9,6 +9,8 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import "./Referee.css";
 import { useGame } from "../../customHooks/useGame";
+import { stockFishRequest } from "../../otherFunctions/APIRequest";
+import { Chess } from "chess.js";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
@@ -24,7 +26,9 @@ export default function Referee() {
   const [fiftyMovesDrawRuleCount, setFiftyMovesDrawRuleCount] = useState<number>(0)
 
 
-  const { pieceCaptured, setPieceCaptured } = useGame();
+  const { pieceCaptured, setPieceCaptured, fakeBoard } = useGame();
+
+  let FENSend: string = ''
 
   const setFiftyMovesDrawCallback = useCallback(() => {
     setBoard((prevBoard) => {
@@ -64,8 +68,11 @@ export default function Referee() {
       board.winningTeam = WinningTeamType.DRAW
       setGameOverModalVisible(true)
     }
-    console.log(board.totalTurns)
+
     if (board.totalTurns !== 1) setBoardStateHistoric([...boardStateHistoric, board.pieces]);
+
+    // const FENReturn: string = stockFishRequest(FENSend)
+
   }, [board])
 
 
@@ -80,6 +87,16 @@ export default function Referee() {
       <h3 style={{ margin: 0 }}>{title}</h3>
     </div>
   );
+
+  function fakeBoardSetup(playedPiece: Piece, destination: Position) {
+    const from: string = playedPiece.position.positionConvert()
+    const to: string = destination.positionConvert()
+
+    fakeBoard.move({ from: from, to: to })
+
+    FENSend = fakeBoard.fen()
+    console.log(fakeBoard.ascii())
+  }
 
 
   //function that checks if the move played is a three fold repetition draw
@@ -118,7 +135,6 @@ export default function Referee() {
       if (piece.isBishop || piece.isKnight) containBishopOrKnight = true
     })
     //if there's only 2 pieces left, that means that only kings are left, so it's a draw
-    console.log(pieceQuantity)
     if (pieceQuantity <= 2) {
       return true
       //if there's 3 pieces left and 1 of then it's a knight or a bishop, it's a draw
@@ -128,10 +144,14 @@ export default function Referee() {
     return false
   }
 
+
+
   function playMoveValidation(
     playedPiece: Piece,
     destination: Position
   ): boolean {
+
+
     //checks if the piece have possible moves, if not, it means that all moves are invalid
     if (playedPiece.possibleMoves === undefined) return false;
     //check if it is white's turn or black's turn, so only pieces of the team's turn can move
@@ -204,8 +224,11 @@ export default function Referee() {
       setFiftyMovesDrawRuleCount(prevCount => prevCount + 1);
     }
 
+
     setPieceCaptured(false)
 
+    if (playedMoveIsValid) {
+    }
     return playedMoveIsValid;
   }
 
@@ -281,6 +304,7 @@ export default function Referee() {
 
   function restartGame() {
     setGameOverModalVisible(false);
+    fakeBoard.reset()
     setBoard(initialBoard.clone());
   }
 
