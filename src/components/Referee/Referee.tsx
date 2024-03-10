@@ -9,8 +9,8 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import "./Referee.css";
 import { useGame } from "../../customHooks/useGame";
-import { stockFishRequest } from "../../otherFunctions/APIRequest";
-import { Chess } from "chess.js";
+import { bestMoveStockFish, stockFishRequest } from "../../otherFunctions/APIRequest";
+import { bestMoveConverted, convertToPosition, isAgressiveMove, sortBestMovesByScore } from "../../otherFunctions/StockFishFunctions";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
@@ -18,6 +18,7 @@ export default function Referee() {
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const [gameOverModalVisible, setGameOverModalVisible] =
     useState<boolean>(false);
+  const [fenSend, setFenSend] = useState<string>('');
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -25,10 +26,7 @@ export default function Referee() {
 
   const [fiftyMovesDrawRuleCount, setFiftyMovesDrawRuleCount] = useState<number>(0)
 
-
   const { pieceCaptured, setPieceCaptured, fakeBoard } = useGame();
-
-  let FENSend: string = ''
 
   const setFiftyMovesDrawCallback = useCallback(() => {
     setBoard((prevBoard) => {
@@ -75,6 +73,48 @@ export default function Referee() {
 
   }, [board])
 
+  useEffect(() => {
+
+    const fetchData = async () => {
+      if (board.currentTeam === TeamType.BLACK) {
+        console.log(fenSend)
+        const bestMovesStockFish: bestMoveStockFish[] = await stockFishRequest(fenSend);
+
+        let bestMovesConverted: bestMoveConverted[] = bestMovesStockFish.map(stockFishMove => ({
+          move: convertToPosition(stockFishMove.move),
+          score: stockFishMove.score
+        }));
+
+        bestMovesConverted = sortBestMovesByScore(bestMovesConverted)
+        let agressiveMove: boolean = false;
+
+        let movePlayed: bestMoveConverted;
+
+        console.log(bestMovesStockFish)
+        console.log(bestMovesConverted)
+        bestMovesConverted.forEach((bestMove, index) => {
+          agressiveMove = isAgressiveMove(bestMove.move.from, bestMove.move.to, board, bestMove.score)
+
+          if (agressiveMove || index === 0) {
+            movePlayed = bestMove
+          }
+        })
+
+        board.pieces.forEach((piece) => {
+
+          if (piece.position.samePosition(movePlayed.move.from)) {
+            playMoveValidation(piece, movePlayed.move.to)
+          }
+        })
+        console.log(bestMovesConverted)
+      }
+    };
+
+    fetchData();
+  }, [board.totalTurns]);
+
+
+
 
 
   interface CustomHeaderProps {
@@ -94,7 +134,8 @@ export default function Referee() {
 
     fakeBoard.move({ from: from, to: to })
 
-    FENSend = fakeBoard.fen()
+    const newFen = fakeBoard.fen()
+    setFenSend(newFen)
     console.log(fakeBoard.ascii())
   }
 
@@ -144,14 +185,14 @@ export default function Referee() {
     return false
   }
 
-
-
   function playMoveValidation(
     playedPiece: Piece,
     destination: Position
   ): boolean {
 
 
+    console.log(playedPiece)
+    console.log(destination)
     //checks if the piece have possible moves, if not, it means that all moves are invalid
     if (playedPiece.possibleMoves === undefined) return false;
     //check if it is white's turn or black's turn, so only pieces of the team's turn can move
@@ -178,11 +219,14 @@ export default function Referee() {
       playedPiece.team
     );
 
+    fakeBoardSetup(playedPiece, destination)
+
     setBoard(() => {
       //clone the board
       const clonedBoard = board.clone();
       //updates the turn
       clonedBoard.totalTurns += 1;
+
 
       //updates the pieces of the board after a valid move is played
       playedMoveIsValid = clonedBoard.playMove(
@@ -192,6 +236,8 @@ export default function Referee() {
         destination,
         setPieceCaptured
       );
+
+
 
       if (clonedBoard.winningTeam !== undefined) {
         setGameOverModalVisible(true);
