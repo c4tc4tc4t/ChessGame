@@ -77,7 +77,6 @@ export default function Referee() {
 
     const fetchData = async () => {
       if (board.currentTeam === TeamType.BLACK) {
-        console.log(fenSend)
         const bestMovesStockFish: bestMoveStockFish[] = await stockFishRequest(fenSend);
 
         let bestMovesConverted: bestMoveConverted[] = bestMovesStockFish.map(stockFishMove => ({
@@ -90,8 +89,6 @@ export default function Referee() {
 
         let movePlayed: bestMoveConverted;
 
-        console.log(bestMovesStockFish)
-        console.log(bestMovesConverted)
         bestMovesConverted.forEach((bestMove, index) => {
           agressiveMove = isAgressiveMove(bestMove.move.from, bestMove.move.to, board, bestMove.score)
 
@@ -106,7 +103,7 @@ export default function Referee() {
             playMoveValidation(piece, movePlayed.move.to)
           }
         })
-        console.log(bestMovesConverted)
+
       }
     };
 
@@ -132,7 +129,29 @@ export default function Referee() {
     const from: string = playedPiece.position.positionConvert()
     const to: string = destination.positionConvert()
 
-    fakeBoard.move({ from: from, to: to })
+    const destinationPiece = board.pieces.find((p) =>
+      p.samePosition(destination)
+    );
+
+    //checks if the played move is a valid castling move
+    if (
+      !playedPiece.hasMoved && !destinationPiece?.hasMoved &&
+      playedPiece.isKing &&
+      destinationPiece?.isRook &&
+      destinationPiece.team === playedPiece.team
+    ) {
+      if (destination.x === 0) {
+
+        fakeBoard.move('O-O-O')
+      } else {
+        fakeBoard.move('O-O')
+
+      }
+    } else {
+
+      fakeBoard.move({ from: from, to: to })
+    }
+
 
     const newFen = fakeBoard.fen()
     setFenSend(newFen)
@@ -189,10 +208,6 @@ export default function Referee() {
     playedPiece: Piece,
     destination: Position
   ): boolean {
-
-
-    console.log(playedPiece)
-    console.log(destination)
     //checks if the piece have possible moves, if not, it means that all moves are invalid
     if (playedPiece.possibleMoves === undefined) return false;
     //check if it is white's turn or black's turn, so only pieces of the team's turn can move
