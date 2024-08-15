@@ -5,6 +5,12 @@
   place-content: center;
 }
 
+.tile {
+  user-select: none;
+  outline: none;
+}
+
+
 .tile .chess-piece{
 width: 100px;
 height: 100px;

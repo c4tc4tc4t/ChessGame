@@ -159,17 +159,19 @@ export class Board {
     }
   }
 
+  getPieceAt(position: Position): Piece | undefined {
+    return this.pieces.find(p => p.position.samePosition(position));
+  }
+
+
   playMove(
     enPassantMove: boolean,
     validMove: boolean,
     playedPiece: Piece,
     destination: Position,
-    setPieceCaptured: (captured: boolean) => void
   ): boolean {
     const pawnDirection = playedPiece.team === TeamType.WHITE ? 1 : -1;
-    const destinationPiece = this.pieces.find((p) =>
-      p.samePosition(destination)
-    );
+    const destinationPiece = this.getPieceAt(destination)
 
     //checks if the played move is a valid castling move
     if (
@@ -232,11 +234,6 @@ export class Board {
       this.pieces = this.pieces.reduce((results, piece) => {
         //finds the played piece
         if (piece.samePiecePosition(playedPiece)) {
-          //checks if a piece is captured for draw logic
-          if (this.pieces.some(p => p.samePosition(destination) && p.team !== playedPiece.team)) {
-            setPieceCaptured(true)
-          }
-
           if (piece.isPawn)
             (piece as Pawn).enPassant =
               Math.abs(playedPiece.position.y - destination.y) === 2 &&

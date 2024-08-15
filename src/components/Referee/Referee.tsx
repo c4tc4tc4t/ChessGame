@@ -10,12 +10,13 @@ import { Dialog } from "primereact/dialog";
 import "./Referee.css";
 import { useGame } from "../../customHooks/useGame";
 import { bestMoveStockFish, stockFishRequest } from "../../otherFunctions/APIRequest";
-import { bestMoveConverted, convertToPosition, isAgressiveMove, sortBestMovesByScore } from "../../otherFunctions/StockFishFunctions";
+import { bestMoveConverted, convertToPosition, isAgressiveMove, isBotCastling, sortBestMovesByScore } from "../../otherFunctions/StockFishFunctions";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
   const [boardStateHistoric, setBoardStateHistoric] = useState<Piece[][]>([]);
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
+  const [pieceCaptured, setPieceCaptured] = useState<boolean>();
   const [gameOverModalVisible, setGameOverModalVisible] =
     useState<boolean>(false);
   const [fenSend, setFenSend] = useState<string>('');
@@ -26,7 +27,7 @@ export default function Referee() {
 
   const [fiftyMovesDrawRuleCount, setFiftyMovesDrawRuleCount] = useState<number>(0)
 
-  const { pieceCaptured, setPieceCaptured, fakeBoard } = useGame();
+  const { fakeBoard } = useGame();
 
   const setFiftyMovesDrawCallback = useCallback(() => {
     setBoard((prevBoard) => {
@@ -94,13 +95,15 @@ export default function Referee() {
 
           if (agressiveMove || index === 0) {
             movePlayed = bestMove
+            console.log(movePlayed)
           }
         })
 
         board.pieces.forEach((piece) => {
 
           if (piece.position.samePosition(movePlayed.move.from)) {
-            playMoveValidation(piece, movePlayed.move.to)
+            let botMove = isBotCastling(piece, movePlayed)
+            playMoveValidation(piece, botMove)
           }
         })
 
@@ -242,6 +245,8 @@ export default function Referee() {
       //updates the turn
       clonedBoard.totalTurns += 1;
 
+      const destinationPiece = board.getPieceAt(destination);
+      const captured = destinationPiece && destinationPiece.team !== playedPiece.team;
 
       //updates the pieces of the board after a valid move is played
       playedMoveIsValid = clonedBoard.playMove(
@@ -249,10 +254,14 @@ export default function Referee() {
         validMove,
         playedPiece,
         destination,
-        setPieceCaptured
       );
 
 
+
+      // Se uma peça foi capturada e o movimento é válido, atualiza o estado local
+      if (captured && playedMoveIsValid) {
+        setPieceCaptured(true);
+      }
 
       if (clonedBoard.winningTeam !== undefined) {
         setGameOverModalVisible(true);

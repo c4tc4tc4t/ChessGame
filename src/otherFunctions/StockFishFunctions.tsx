@@ -105,6 +105,27 @@ export function isAgressiveMove(initialPosition: Position, destinationPosition: 
   return false
 }
 
+export function isBotCastling(piece: Piece, movePlayed: bestMoveConverted): Position {
+
+  if (!piece.isKing) return movePlayed.move.to
+
+
+  if (movePlayed.move.from.samePosition(new Position(4, 7)) && movePlayed.move.to.samePosition(new Position(6, 7))) {
+    return new Position(7, 7)
+  }
+  if (movePlayed.move.from.samePosition(new Position(4, 7)) && movePlayed.move.to.samePosition(new Position(1, 7))) {
+    return new Position(0, 7)
+  }
+  if (movePlayed.move.from.samePosition(new Position(4, 0)) && movePlayed.move.to.samePosition(new Position(6, 7))) {
+    return new Position(7, 0)
+  }
+  if (movePlayed.move.from.samePosition(new Position(4, 0)) && movePlayed.move.to.samePosition(new Position(1, 7))) {
+    return new Position(0, 0)
+  }
+
+  return movePlayed.move.to
+}
+
 interface convertedMove {
   from: Position,
   to: Position
