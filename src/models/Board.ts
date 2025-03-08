@@ -57,87 +57,64 @@ export class Board {
     if (this.pieces.filter(p => p.team === this.currentTeam).some(p => p.possibleMoves !== undefined && p.possibleMoves.length > 0)) return
 
     //winner check logic, if the game is over and king is not attacked, it's a draw
+    console.log("this.kingIsInCheck")
+    console.log(this.kingIsInCheck)
     if (!this.kingIsInCheck) {
       this.winningTeam = WinningTeamType.DRAW
+      console.log("this.winningTeam")
+      console.log(this.winningTeam)
     } else {
       this.winningTeam = (this.currentTeam === TeamType.WHITE) ? WinningTeamType.BLACK : WinningTeamType.WHITE
+      console.log(this.winningTeam)
     }
 
   }
 
   checkCurrentTeamMoves() {
-    //filters pieces by team
-    for (const piece of this.pieces.filter(
-      (p) => p.team === this.currentTeam
-    )) {
-      //if piece dont have possible moves, no need for verification
-      if (piece.possibleMoves === undefined) continue;
-
-      //loops through each move of each piece
+    let isInCheck = false; // Criamos uma variável local para evitar sobrescrever `this.kingIsInCheck` incorretamente
+  
+    for (const piece of this.pieces.filter((p) => p.team === this.currentTeam)) {
+      if (!piece.possibleMoves) continue; // Se a peça não tem movimentos, pula
+  
       for (const move of piece.possibleMoves) {
-        //clones the board to keep original state
         const simulatedBoard = this.clone();
-
-        simulatedBoard.pieces = simulatedBoard.pieces.filter(
-          (p) => !p.samePosition(move)
-        );
-
-        //finds the piece on the clonedboard and updates position to move target
-        simulatedBoard.pieces.find((p) =>
-          p.samePiecePosition(piece)
-        )!.position = move.clone()
-
-        //finds the king on the clonedboard
+  
+        // Simula a jogada no tabuleiro clonado
+        simulatedBoard.pieces = simulatedBoard.pieces.filter((p) => !p.samePosition(move));
+        simulatedBoard.pieces.find((p) => p.samePiecePosition(piece))!.position = move.clone();
+  
+        // Encontra o rei do time atual no tabuleiro simulado
         const clonedKing = simulatedBoard.pieces.find(
           (p) => p.isKing && p.team === simulatedBoard.currentTeam
         )!;
-
-
-        //loops through pieces of enemy team
-        for (const enemy of simulatedBoard.pieces.filter(
-          (p) => p.team !== simulatedBoard.currentTeam
-        )) {
-          //get enemys possible moves to calculate danger and checks
-          enemy.possibleMoves = simulatedBoard.getValidMoves(
-            enemy,
-            simulatedBoard.pieces
-          );
-
-          //pawns cannot capture as they move, so remove those moves that can capture the king
+  
+        // Itera sobre as peças inimigas para verificar se alguma dá xeque
+        for (const enemy of simulatedBoard.pieces.filter((p) => p.team !== simulatedBoard.currentTeam)) {
+          enemy.possibleMoves = simulatedBoard.getValidMoves(enemy, simulatedBoard.pieces);
+  
           if (enemy.isPawn) {
             if (
               enemy.possibleMoves.some(
-                (m) =>
-                  m.x !== enemy.position.x &&
-                  m.samePosition(clonedKing?.position)
+                (m) => m.x !== enemy.position.x && m.samePosition(clonedKing?.position)
               )
             ) {
-              piece.possibleMoves = piece.possibleMoves?.filter(
-                (m) => !m.samePosition(move)
-              );
+              isInCheck = true;
+              piece.possibleMoves = piece.possibleMoves?.filter((m) => !m.samePosition(move));
             }
           } else {
-
-            //if king is in check by any move, removes all moves from all pieces that cannot block the attack or capture the piece
-            if (
-              enemy.possibleMoves.some((m) =>
-                m.samePosition(clonedKing?.position)
-              )
-            ) {
-              //king is in check update for draw logic
-              this.kingIsInCheck = true
-              piece.possibleMoves = piece.possibleMoves?.filter(
-                (m) => !m.samePosition(move)
-              );
-
-            } else {
-              this.kingIsInCheck = false
+            if (enemy.possibleMoves.some((m) => m.samePosition(clonedKing?.position))) {
+              isInCheck = true;
+              piece.possibleMoves = piece.possibleMoves?.filter((m) => !m.samePosition(move));
             }
           }
         }
       }
     }
+  
+    // Atualiza `this.kingIsInCheck` **apenas no final**, garantindo que não seja sobrescrito
+    this.kingIsInCheck = isInCheck;
   }
+  
 
   //gets the possible moves of the piece
   getValidMoves(piece: Piece, boardState: Piece[]): Position[] {

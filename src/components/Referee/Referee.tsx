@@ -10,16 +10,27 @@ import { Dialog } from "primereact/dialog";
 import "./Referee.css";
 import { useGame } from "../../customHooks/useGame";
 import { bestMoveStockFish, stockFishRequest } from "../../otherFunctions/APIRequest";
-import { bestMoveConverted, convertToPosition, isAgressiveMove, isBotCastling, sortBestMovesByScore } from "../../otherFunctions/StockFishFunctions";
+import { bestMoveConverted, convertToPosition, isAgressiveMove, isBotCastling, pieceTypeConversor, sortBestMovesByScore } from "../../otherFunctions/StockFishFunctions";
+import { fakeBoardSetup, insufficientMaterialDraw, restartGame, threefoldRepetitionDraw } from "../../utils/boardUtils";
+import { isEnPassantMove } from "../../utils/moveUtils";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
   const [boardStateHistoric, setBoardStateHistoric] = useState<Piece[][]>([]);
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
+  const [promotionPieceFinal, setPromotionPieceFinal] = useState<string | null>(null);
   const [pieceCaptured, setPieceCaptured] = useState<boolean>();
   const [gameOverModalVisible, setGameOverModalVisible] =
     useState<boolean>(false);
   const [fenSend, setFenSend] = useState<string>('');
+
+  const [pendingMove, setPendingMove] = useState<{
+    playedPiece: Piece;
+    destination: Position;
+  } | null>(null);
+  const [promotionCompleted, setPromotionCompleted] = useState<boolean>(false);
+
+
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +52,39 @@ export default function Referee() {
     setFiftyMovesDrawRuleCount(0);
   }, []);
 
+  // Atualiza o estado quando um peão precisa ser promovido
+  useEffect(() => {
+    if (promotionPawn && promotionPieceFinal) {
+      console.log("🔥 promotionPawn atualizado, chamando promotePawn()");
+
+      switch (promotionPieceFinal.toLowerCase()) {
+        case "q":
+          console.log("🎯 Promovendo para rainha");
+          promotePawn(PieceType.QUEEN);
+          break;
+        case "r":
+          console.log("🎯 Promovendo para torre");
+          promotePawn(PieceType.ROOK);
+          break;
+        case "b":
+          console.log("🎯 Promovendo para bispo");
+          promotePawn(PieceType.BISHOP);
+          break;
+        case "n":
+          console.log("🎯 Promovendo para cavalo");
+          promotePawn(PieceType.KNIGHT);
+          break;
+        default:
+          console.warn("⚠️ Peça de promoção desconhecida, promovendo para rainha.");
+          promotePawn(PieceType.QUEEN);
+          break;
+      }
+    }
+  }, [promotionPawn, promotionPieceFinal]); // Executa sempre que `promotionPawn` ou `promotionPiece` forem atualizados
+
+
+
+
   useEffect(() => {
     if (fiftyMovesDrawRuleCount >= 100) {
       setFiftyMovesDrawCallback();
@@ -49,7 +93,7 @@ export default function Referee() {
 
 
   useEffect(() => {
-    //if 100 moves are played, 50 by each team, it's a draw
+    //se 100 movimentos forem jogados, 50 por cada equipe é um empate
     if (fiftyMovesDrawRuleCount >= 100) {
       board.winningTeam = WinningTeamType.DRAW
       setGameOverModalVisible(true)
@@ -58,11 +102,11 @@ export default function Referee() {
   }, [fiftyMovesDrawRuleCount]);
 
   useEffect(() => {
-    const isDrawByrepetition: boolean = threefoldRepetitionDraw(board)
+    const isDrawByrepetition: boolean = threefoldRepetitionDraw(board, boardStateHistoric)
 
     const isinsufficientMaterialDraw = insufficientMaterialDraw(board);
 
-    //if is a draw by repetition or draw by insufficient material shows the modal with draw
+    //se é um empate por repetição ou por insuficiência material, mostra o modal de empate
     if (isDrawByrepetition || isinsufficientMaterialDraw) {
       board.winningTeam = WinningTeamType.DRAW
       setGameOverModalVisible(true)
@@ -75,9 +119,8 @@ export default function Referee() {
   }, [board])
 
   useEffect(() => {
-
     const fetchData = async () => {
-      if (board.currentTeam === TeamType.BLACK) {
+      if (board.currentTeam === TeamType.BLACK || promotionCompleted) {
         const bestMovesStockFish: bestMoveStockFish[] = await stockFishRequest(fenSend);
 
         let bestMovesConverted: bestMoveConverted[] = bestMovesStockFish.map(stockFishMove => ({
@@ -85,35 +128,36 @@ export default function Referee() {
           score: stockFishMove.score
         }));
 
-        bestMovesConverted = sortBestMovesByScore(bestMovesConverted)
+        bestMovesConverted = sortBestMovesByScore(bestMovesConverted);
         let agressiveMove: boolean = false;
-
-        let movePlayed: bestMoveConverted;
+        let movePlayed: bestMoveConverted | null = null;
 
         bestMovesConverted.forEach((bestMove, index) => {
-          agressiveMove = isAgressiveMove(bestMove.move.from, bestMove.move.to, board, bestMove.score)
+          agressiveMove = isAgressiveMove(bestMove.move.from, bestMove.move.to, board, bestMove.score);
 
           if (agressiveMove || index === 0) {
-            movePlayed = bestMove
-            console.log(movePlayed)
+            movePlayed = bestMove;
           }
-        })
+        });
 
         board.pieces.forEach((piece) => {
-
-          if (piece.position.samePosition(movePlayed.move.from)) {
-            let botMove = isBotCastling(piece, movePlayed)
-            playMoveValidation(piece, botMove)
+          if (piece.position.samePosition(movePlayed!.move.from)) {
+            let botMove = isBotCastling(piece, movePlayed!);
+            if (movePlayed?.move.isPromotion) {
+              playMoveValidation(piece, botMove, movePlayed?.move.promotionPiece);
+            } else {
+              playMoveValidation(piece, botMove);
+            }
           }
-        })
+        });
 
+        // Resetar o estado após a promoção ser concluída e a API ter sido chamada
+        setPromotionCompleted(false);
       }
     };
 
     fetchData();
-  }, [board.totalTurns]);
-
-
+  }, [board.totalTurns, promotionCompleted]); // Agora espera a promoção estar concluída
 
 
 
@@ -121,99 +165,20 @@ export default function Referee() {
     title: string;
   }
 
-  //CustomHeader created to style the header of dialog PrimeReact
   const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => (
     <div style={{ textAlign: "center", width: "100%" }}>
       <h3 style={{ margin: 0 }}>{title}</h3>
     </div>
   );
 
-  function fakeBoardSetup(playedPiece: Piece, destination: Position) {
-    const from: string = playedPiece.position.positionConvert()
-    const to: string = destination.positionConvert()
-
-    const destinationPiece = board.pieces.find((p) =>
-      p.samePosition(destination)
-    );
-
-    //checks if the played move is a valid castling move
-    if (
-      !playedPiece.hasMoved && !destinationPiece?.hasMoved &&
-      playedPiece.isKing &&
-      destinationPiece?.isRook &&
-      destinationPiece.team === playedPiece.team
-    ) {
-      if (destination.x === 0) {
-
-        fakeBoard.move('O-O-O')
-      } else {
-        fakeBoard.move('O-O')
-
-      }
-    } else {
-
-      fakeBoard.move({ from: from, to: to })
-    }
-
-
-    const newFen = fakeBoard.fen()
-    setFenSend(newFen)
-    console.log(fakeBoard.ascii())
-  }
-
-
-  //function that checks if the move played is a three fold repetition draw
-  function threefoldRepetitionDraw(board: Board): boolean {
-    let positionRepeatedCount = 0
-    //boardstatehistoric is an array that contains Piece[], meaning an array that contain each board State played saved
-    boardStateHistoric.forEach((boardState) => {
-      //compare the type, team and position of every state played with the current state
-      const allPiecesMatch = boardState.every(piece1 => {
-        return board.pieces.some(piece2 => {
-          return piece1.type === piece2.type &&
-            piece1.team === piece2.team &&
-            piece1.position.samePosition(piece2.position);
-        });
-      })
-      //checks if the current state is repeated
-      if (allPiecesMatch) positionRepeatedCount++
-    })
-
-    //if current board state is repeated 2 times, means that the position appeared 3 times, current +2 , so, it's a draw by repetition
-    if (positionRepeatedCount >= 2) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  //function that checks if it is a draw by insuficcient material
-  function insufficientMaterialDraw(board: Board): boolean {
-    //gets the quantity of pieces on the board
-    const pieceQuantity: number = board.pieces.length
-    let containBishopOrKnight: boolean = false;
-
-    //checks if there's a remaining knight or bishop on the board
-    board.pieces.forEach((piece) => {
-      if (piece.isBishop || piece.isKnight) containBishopOrKnight = true
-    })
-    //if there's only 2 pieces left, that means that only kings are left, so it's a draw
-    if (pieceQuantity <= 2) {
-      return true
-      //if there's 3 pieces left and 1 of then it's a knight or a bishop, it's a draw
-    } else if (pieceQuantity <= 3 && containBishopOrKnight) {
-      return true
-    }
-    return false
-  }
-
   function playMoveValidation(
     playedPiece: Piece,
-    destination: Position
+    destination: Position,
+    promotionPiece?: string
   ): boolean {
-    //checks if the piece have possible moves, if not, it means that all moves are invalid
+    //checa se a peça tem movimentos possiveis, se não, significa que todos os movimentos são invalidos
     if (playedPiece.possibleMoves === undefined) return false;
-    //check if it is white's turn or black's turn, so only pieces of the team's turn can move
+    //checak se é turno das brancas ou das pretas, assim apenas o time da vez pode mover
     if (playedPiece.team === TeamType.WHITE && board.totalTurns % 2 !== 1)
       return false;
     if (playedPiece.team === TeamType.BLACK && board.totalTurns % 2 !== 0)
@@ -221,34 +186,45 @@ export default function Referee() {
 
     let playedMoveIsValid = false;
 
-    //check if the move played is into the possibleMoves array
+    //checa se o movimento jogado está dentro do array possibleMoves
     const validMove = playedPiece.possibleMoves?.some((m) =>
       m.samePosition(destination)
     );
 
-    //if validmove is false return false, because the move played was not a possible move
+    //se validMove é false, significa que o movimento jogado não era possivel
     if (!validMove) return false;
 
-    //check if the move played is a enPassant move
+    //checa se o movimento jogado é um movimento enPassant
     const enPassantMove: boolean = isEnPassantMove(
       playedPiece.position,
       destination,
       playedPiece.type,
-      playedPiece.team
+      playedPiece.team,
+      board
     );
 
-    fakeBoardSetup(playedPiece, destination)
+    //checa a linha para promoção da peça
+    let promotionRow = playedPiece.team === TeamType.WHITE ? 7 : 0;
+
+    if (promotionPiece) {
+      fakeBoardSetup(playedPiece, destination, board, fakeBoard, setFenSend, promotionPiece)
+    } else {
+      //dar um jeito dessa promoção estar dando erro, tem que enviar o promotion certo para api, esperar o modal abrir e talz
+      if (!(playedPiece.isPawn && destination.y === promotionRow)) {
+        fakeBoardSetup(playedPiece, destination, board, fakeBoard, setFenSend);
+      }
+    }
 
     setBoard(() => {
-      //clone the board
+      //clona o tabuleiro
       const clonedBoard = board.clone();
-      //updates the turn
+      //atualiza o turno
       clonedBoard.totalTurns += 1;
 
       const destinationPiece = board.getPieceAt(destination);
       const captured = destinationPiece && destinationPiece.team !== playedPiece.team;
 
-      //updates the pieces of the board after a valid move is played
+      //atualiza as peças do tabuleiro após um movimento valido
       playedMoveIsValid = clonedBoard.playMove(
         enPassantMove,
         validMove,
@@ -267,32 +243,40 @@ export default function Referee() {
         setGameOverModalVisible(true);
       }
 
-      //set the updated board
       return clonedBoard;
     });
 
-    //check the promotion row of the piece
-    let promotionRow = playedPiece.team === TeamType.WHITE ? 7 : 0;
 
-    //check if the piece is a pawn and if the move played is a promotion
+
+
     if (destination.y === promotionRow && playedPiece.isPawn) {
-      //shows the modal promotion to choose a piece
-      modalRef.current?.classList.remove("hidden");
-      //updates the promotionPawn with the pawn played for further verifications
       setPromotionPawn(() => {
         const clonedPlayedPiece = playedPiece.clone();
         clonedPlayedPiece.position = destination.clone();
-
         return clonedPlayedPiece;
       });
+
+      // Armazena a peça de promoção antes de chamar o modal ou processar a promoção automática
+      setPromotionPieceFinal(promotionPiece ?? '');
+
+      if (playedPiece.team === TeamType.WHITE) {
+        setPendingMove({ playedPiece, destination });
+        // Mostra o modal de promoção para o jogador humano
+        modalRef.current?.classList.remove("hidden");
+      }
+      return false
     }
 
-    //if a pawn is moves or a piece is captured the fifty move rule is reseted, otherwise it keeps counting
+
+
+
+    //se o peão se mover ou uma peça for capturada, a regra do empate de 50 movimentos é resetada.
     if (playedPiece.isPawn || pieceCaptured) {
       setFiftyMovesDrawRuleCount(0)
     } else {
       setFiftyMovesDrawRuleCount(prevCount => prevCount + 1);
     }
+
 
 
     setPieceCaptured(false)
@@ -302,85 +286,47 @@ export default function Referee() {
     return playedMoveIsValid;
   }
 
-  function isEnPassantMove(
-    initialPosition: Position,
-    desiredPosition: Position,
-    type: PieceType,
-    team: TeamType
-  ) {
-    //attributes the direction of the pawn based on his team
-    const pawnDirection = team === TeamType.WHITE ? 1 : -1;
-
-    //check if is pawn
-    if (type === PieceType.PAWN) {
-      //check if the move is enpassant, if wants to move 1 tile on x and 1 tile on y
-      if (
-        (desiredPosition.x - initialPosition.x === -1 ||
-          desiredPosition.x - initialPosition.x === 1) &&
-        desiredPosition.y - initialPosition.y === pawnDirection
-      ) {
-        //finds if the piece with the enPassant move exist on the board and then returns
-        const piece = board.pieces.find(
-          (p) =>
-            p.position.x === desiredPosition.x &&
-            p.position.y === desiredPosition.y - pawnDirection &&
-            p.isPawn &&
-            (p as Pawn).enPassant
-        );
-        if (piece) return true;
-      }
-    }
-
-    return false;
-  }
-
   function promotePawn(pieceType: PieceType) {
-    //if there's not a pawn being promoted, return
-    if (promotionPawn === undefined) {
-      return;
+    if (!promotionPawn) return;
+
+    if (pendingMove) {
+      const { playedPiece, destination } = pendingMove;
+
+      const convertedPieceType: string = pieceTypeConversor(pieceType);
+      fakeBoardSetup(playedPiece, destination, board, fakeBoard, setFenSend, convertedPieceType);
+
+      setPendingMove(null);
     }
 
     setBoard(() => {
-      //clone the board to keep the original state
       const clonedBoard = board.clone();
       clonedBoard.pieces = clonedBoard.pieces.reduce((results, piece) => {
-        //finds the pawn the board
         if (piece.samePiecePosition(promotionPawn)) {
-          //push the selected piece(queen, rook, etc..) ti replace the pawn
-          results.push(
-            new Piece(piece.position.clone(), pieceType, piece.team, true)
-          );
+          results.push(new Piece(piece.position.clone(), pieceType, piece.team, true));
         } else {
           results.push(piece);
         }
-
         return results;
       }, [] as Piece[]);
 
-      //re-calculate moves so new piece have possible moves
       clonedBoard.calculateAllMoves();
-
       return clonedBoard;
     });
 
-    //hides the promotion modal
     modalRef.current?.classList.add("hidden");
+
+    // Sinaliza que a promoção foi concluída e o FEN atualizado
+    setPromotionCompleted(true);
   }
 
-  //returns the pawn team to the promoted piece
+
   function promotionTeamType() {
     return promotionPawn?.team === TeamType.WHITE ? "w" : "b";
   }
 
-  function restartGame() {
-    setGameOverModalVisible(false);
-    fakeBoard.reset()
-    setBoard(initialBoard.clone());
-  }
-
   return (
     <>
-      <div style={{ color: "white" }}>{board.totalTurns}</div>
+      <div style={{ color: 'white' }}>{board.totalTurns}</div>
       <div id="pawn-promotion-modal" className="hidden" ref={modalRef}>
         <div className="modal-body">
           <img alt="promoteRook"
@@ -417,7 +363,7 @@ export default function Referee() {
           onHide={() => setGameOverModalVisible(false)}
         >
           <div className="flex justify-content-center">
-            <Button onClick={() => restartGame()}>Play Again</Button>
+            <Button onClick={() => restartGame(fakeBoard, setGameOverModalVisible, setBoard, initialBoard)}>Play Again</Button>
           </div>
         </Dialog>
       </div>

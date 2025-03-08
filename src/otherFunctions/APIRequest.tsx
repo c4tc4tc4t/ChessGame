@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-
-
 export async function stockFishRequest(fen: string): Promise<bestMoveStockFish[]> {
   const apiUrl = 'http://localhost:3000';
   const params = { fen };
 
   return await axios.get(apiUrl, { params })
     .then(response => {
+      console.log("response")
+      console.log(response)
       return response.data.bestmoves
     })
     .catch(error => {

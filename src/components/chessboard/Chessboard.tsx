@@ -32,20 +32,20 @@ export default function Chessboard({ playMoveValidation, pieces }: Props) {
   function grabPiece(e: React.MouseEvent) {
     const pieceElement = e.target as HTMLElement;
     const chessboard = chessBoardRef.current;
-    //check if the element clicked is a piece
+    //checa se o elemento clicado é uma peça
     if (pieceElement.classList.contains("chess-piece") && chessboard) {
-      //calculates the grab x and y
+      //calcula grab x e y
       const grabX = Math.floor((e.clientX - chessboard.offsetLeft) / GRID_SIZE);
       const grabY = Math.abs(
         Math.ceil((e.clientY - chessboard.offsetTop - BOARD_HEIGHT) / GRID_SIZE)
       );
-      //updates the grabPosition with the new X and Y
+      //atualiza o grabPosition com os novos X e Y
       setGrabPosition(new Position(grabX, grabY));
 
-      //calculates the mouse position - offset
+      //calcula a posição do mouse - offset
       const x = e.clientX - PIECE_CENTER_OFFSET;
       const y = e.clientY - PIECE_CENTER_OFFSET;
-      //updates de piece position into the mouse click
+      //atualiza a posição da peça ao click do mouse
       pieceElement.style.position = "absolute";
       pieceElement.style.left = `${x}px`;
       pieceElement.style.top = `${y}px`;
@@ -69,7 +69,7 @@ export default function Chessboard({ playMoveValidation, pieces }: Props) {
       const y = e.clientY - CURSOR_OFFSET;
       activePiece.style.position = "absolute";
 
-      //updates piece position on mouse movement, making sure the piece cannot get out of the board
+      //atualiza a posição da peça no movimento do mouse, para garantir que a peça não saia para fora do tabuleiro
       if (x < minX) {
         activePiece.style.left = `${minX}px`;
       } else if (x > maxX) {
@@ -90,25 +90,25 @@ export default function Chessboard({ playMoveValidation, pieces }: Props) {
 
   function dropPiece(e: React.MouseEvent) {
     const chessboard = chessBoardRef.current;
-    //check if the piece is grabbed
+    //checa se a peça foi selecionada
     if (activePiece && chessboard) {
-      //calculates what x and y(position) the piece is being placed
+      //calcula x e y que a peça está sendo colocada
       const x = Math.floor((e.clientX - chessboard.offsetLeft) / GRID_SIZE);
       const y = Math.abs(
         Math.ceil((e.clientY - chessboard.offsetTop - BOARD_HEIGHT) / GRID_SIZE)
       );
 
-      //finds the piece grabbed on the pieces to be updated
+      //acha a peça selecionada nas peças para ser atualizada
       const currentPiece = pieces.find((p) => p.samePosition(grabPosition));
 
-      //check if the piece was found
+      //checa se a peça foi encontrada
       if (currentPiece) {
-        //checks if the move played is a valid move
+        //checa se o movimento jogado é valido
         var sucess = playMoveValidation(
           currentPiece.clone(),
           new Position(x, y)
         );
-        //if the move is a valid move, update the position of the piece
+        //se o movimento é valido, atualiza a posição da peça
         if (!sucess) {
           activePiece.style.position = "relative";
           activePiece.style.removeProperty("top");
@@ -116,14 +116,14 @@ export default function Chessboard({ playMoveValidation, pieces }: Props) {
         }
       }
 
-      //reset the grab
+      //reset
       setActivePiece(null);
     }
   }
 
   let board = [];
 
-  //updates the board
+  //atualiza o tabuleiro
   for (let j = VERTICAL_AXIS.length - 1; j >= 0; j--) {
     for (let i = 0; i < HORIZONTAL_AXIS.length; i++) {
       const number = i + j + 2;

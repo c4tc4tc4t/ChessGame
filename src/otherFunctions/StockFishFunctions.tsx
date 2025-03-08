@@ -2,11 +2,24 @@
 import { Piece, Position } from "../models";
 import { Board } from "../models/Board";
 import { tileIsEmptyOrOccupiedByOpponent } from "../referee/rules/GeneralRules";
+import { PieceType } from "../Types";
 
 export function convertToPosition(stockFishMove: string): convertedMove {
   const xLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
-  const moveArray = stockFishMove.split('');
+  let isPromotion = false;
+  let promotionPiece = '';
+  let moveArray: string[] = [];
+
+  if (stockFishMove.length > 4) {
+    isPromotion = true;
+    promotionPiece = stockFishMove[4];
+    moveArray = stockFishMove.slice(0, 4).split('');
+  } else {
+    moveArray = stockFishMove.split('');
+  }
+
+
 
   let initialX: number = -1
   let destinationX: number = -1
@@ -21,7 +34,7 @@ export function convertToPosition(stockFishMove: string): convertedMove {
       destinationX = index
     }
   })
-  return { from: new Position(initialX, initialY), to: new Position(destinationX, destinationY) }
+  return { from: new Position(initialX, initialY), to: new Position(destinationX, destinationY), isPromotion: isPromotion, promotionPiece: promotionPiece }
 }
 
 export function sortBestMovesByScore(moves: bestMoveConverted[]): bestMoveConverted[] {
@@ -126,9 +139,29 @@ export function isBotCastling(piece: Piece, movePlayed: bestMoveConverted): Posi
   return movePlayed.move.to
 }
 
+export function pieceTypeConversor(pieceType: PieceType) {
+  switch (pieceType) {
+    case "queen":
+      return "q"
+      break;
+    case "rook":
+      return 'r'
+      break
+    case "bishop":
+      return "b"
+    case "knight":
+      return 'n'
+    default:
+      return 'error'
+      break;
+  }
+}
+
 interface convertedMove {
   from: Position,
-  to: Position
+  to: Position,
+  isPromotion?: boolean,
+  promotionPiece?: string
 }
 
 export interface bestMoveConverted {
